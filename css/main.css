@@ -1,0 +1,71 @@
+/* ==========================================================================
+   Feuille de style unique de « Les Fréquences Cachées ».
+   Ordre de cascade : tokens → reset → typographie → structure → composants → actes.
+   Un fichier n'est importé qu'une fois qu'il existe : pas de 404 en console.
+   ========================================================================== */
+
+/* --- Fondations ---------------------------------------------------------- */
+@import url("./base/variables.css");
+@import url("./base/polices.css");
+@import url("./base/reset.css");
+
+/* --- Typographie ---------------------------------------------------------- */
+@import url("./base/typographie.css");
+
+/* --- Structure ------------------------------------------------------------ */
+@import url("./layout/actes.css");
+@import url("./layout/entete.css");
+@import url("./layout/ciel.css");
+/* @import url("./layout/scroll.css"); */
+/* @import url("./layout/responsive.css"); */
+
+/* --- Composants ----------------------------------------------------------- */
+@import url("./ui/seuil.css");
+@import url("./ui/interlude.css");
+/* @import url("./ui/lecteur.css"); */
+/* @import url("./ui/galerie.css"); */
+/* @import url("./ui/video.css"); */
+/* @import url("./ui/navigation.css"); */
+/* @import url("./ui/animations.css"); */
+
+/* --- Actes ---------------------------------------------------------------- */
+@import url("./actes/acte-01.css");
+@import url("./actes/acte-02.css");
+@import url("./actes/acte-03.css");
+@import url("./actes/acte-04.css");
+@import url("./actes/acte-05.css");
+@import url("./actes/acte-06.css");
+@import url("./actes/acte-07.css");
+
+/* ==========================================================================
+   Socle
+   Uniquement ce qui doit exister avant le premier acte. Aucun style d'acte ici.
+   ========================================================================== */
+
+html {
+  background-color: var(--c-bg);
+}
+
+body {
+  min-height: 100dvh;
+  background-color: var(--c-bg);
+  color: var(--c-text);
+  font-family: var(--font-text);
+  font-size: var(--fs-base);
+
+  /* L'expérience est plein écran : aucun débordement latéral toléré */
+  overflow-x: hidden;
+}
+
+/* Contenu réservé aux lecteurs d'écran (annonces, titres de section) */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}

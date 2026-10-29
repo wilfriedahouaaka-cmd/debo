@@ -1,0 +1,253 @@
+/* ==========================================================================
+   Intermède — Acte 1 → Acte 2
+   Un noir franc, une convergence de points, deux messages successifs.
+   Rien d'autre que l'intermède ne doit être visible pendant la séquence.
+   ========================================================================== */
+
+.interlude {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-interlude);
+
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+
+  /* Noir franc : l'écran doit être vidé, pas seulement assombri */
+  background-color: var(--c-noir);
+
+  /* Il couvre tout : aucun clic ne doit passer derrière */
+  cursor: default;
+  opacity: 1;
+  transition: opacity 700ms var(--ease-doux);
+}
+
+/* Fondu de sortie : l'acte 2 apparaît dessous, déjà prêt */
+.interlude.est-sortie {
+  opacity: 0;
+}
+
+/* --- Convergence --------------------------------------------------------- */
+
+.interlude__convergence {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transition: opacity 500ms var(--ease-doux);
+  pointer-events: none;
+}
+
+.interlude.est-convergence .interlude__convergence {
+  opacity: 1;
+}
+
+/* En fin de convergence, on efface la scène avant le message */
+.interlude.est-fini .interlude__convergence {
+  opacity: 0;
+}
+
+/* Lueur douce au centre, pour accueillir les points */
+.interlude__lueur {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 70vmin;
+  height: 70vmin;
+  margin: -35vmin;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgb(var(--c-lueur) / 0.09), transparent 65%);
+  opacity: 0;
+  transition: opacity 1200ms var(--ease-doux);
+}
+
+.interlude.est-convergence .interlude__lueur {
+  opacity: 1;
+}
+
+/* Les anneaux se referment sur le centre */
+.interlude__anneau {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: var(--taille-anneau);
+  height: var(--taille-anneau);
+  margin: calc(var(--taille-anneau) / -2);
+  border: 1px solid rgb(var(--c-lueur) / 0.22);
+  border-radius: 50%;
+  opacity: 0;
+}
+
+.interlude__anneau--un {
+  --taille-anneau: 76vmin;
+}
+
+.interlude__anneau--deux {
+  --taille-anneau: 48vmin;
+  border-color: rgb(var(--c-lueur) / 0.14);
+}
+
+.interlude.est-convergence .interlude__anneau--un {
+  animation: interlude-anneau 2600ms var(--ease-in-out) both;
+}
+
+.interlude.est-convergence .interlude__anneau--deux {
+  animation: interlude-anneau 2600ms var(--ease-in-out) 200ms both;
+}
+
+@keyframes interlude-anneau {
+  0% {
+    transform: scale(1);
+    opacity: 0;
+  }
+  22% {
+    opacity: 0.65;
+  }
+  100% {
+    transform: scale(0.04);
+    opacity: 0;
+  }
+}
+
+/* Les points partent de la périphérie et viennent mourir au centre */
+.interlude__points {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+}
+
+.interlude__point {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: var(--taille, 3px);
+  height: var(--taille, 3px);
+  margin: calc(var(--taille, 3px) / -2);
+  border-radius: 50%;
+  background-color: var(--teinte, var(--c-accent));
+  box-shadow: 0 0 12px rgb(var(--c-lueur) / 0.5);
+  opacity: 0;
+}
+
+/* Courbe symétrique : les points apparaissent, tiennent en couronne,
+   puis convergent. Avec --ease-doux, l'essentiel du trajet était déjà
+   fait quand l'œil arrivait : l'effet semblait inexistant. */
+.interlude.est-convergence .interlude__point {
+  animation: interlude-converger var(--duree, 2200ms) var(--ease-in-out) var(--retard, 0ms) both;
+}
+
+@keyframes interlude-converger {
+  0% {
+    transform: translate(var(--dx), var(--dy)) scale(1);
+    opacity: 0;
+  }
+  8% {
+    opacity: var(--opacite, 0.7);
+  }
+  38% {
+    transform: translate(var(--dx), var(--dy)) scale(1);
+    opacity: var(--opacite, 0.7);
+  }
+  72% {
+    opacity: var(--opacite, 0.7);
+  }
+  100% {
+    transform: translate(0, 0) scale(0.2);
+    opacity: 0;
+  }
+}
+
+/* Le point central : ce vers quoi tout converge */
+.interlude__coeur {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  z-index: 2;
+  width: 5px;
+  height: 5px;
+  margin: -2.5px;
+  border-radius: 50%;
+  background-color: var(--c-accent-soft);
+  box-shadow: 0 0 36px 12px rgb(var(--c-lueur) / 0.18);
+  opacity: 0;
+}
+
+.interlude.est-convergence .interlude__coeur {
+  animation: interlude-coeur 2600ms var(--ease-doux) both;
+}
+
+@keyframes interlude-coeur {
+  0% {
+    transform: scale(0.2);
+    opacity: 0;
+  }
+  60% {
+    transform: scale(0.7);
+    opacity: 0.35;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 0.9;
+  }
+}
+
+/* --- Messages ------------------------------------------------------------ */
+
+.interlude__message {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: min(34rem, calc(100% - 2 * var(--marge-page)));
+  margin: 0;
+  transform: translate(-50%, calc(-50% + 10px));
+
+  font-family: var(--font-display);
+  font-weight: 300;
+  font-style: italic;
+  text-align: center;
+
+  opacity: 0;
+  transition:
+    opacity 900ms var(--ease-doux),
+    transform 900ms var(--ease-doux);
+  pointer-events: none;
+}
+
+.interlude__message--un {
+  font-size: clamp(1.2rem, 4vw, 1.7rem);
+  line-height: 1.4;
+  color: var(--c-accent-soft);
+}
+
+.interlude__message--deux {
+  font-size: clamp(1rem, 2.6vw, 1.3rem);
+  line-height: 1.65;
+  color: var(--c-text);
+}
+
+.interlude__message.est-visible {
+  opacity: 1;
+  transform: translate(-50%, -50%);
+}
+
+/* --- Accessibilité ------------------------------------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+  .interlude,
+  .interlude__convergence,
+  .interlude__lueur,
+  .interlude__message {
+    transition: none;
+  }
+
+  /* Pas de pluie de points : on garde seulement un cœur fixe et doux. */
+  .interlude.est-convergence .interlude__point,
+  .interlude.est-convergence .interlude__anneau {
+    animation: none;
+  }
+
+  .interlude.est-convergence .interlude__coeur {
+    animation: none;
+    transform: scale(1);
+    opacity: 0.9;
+  }
+}

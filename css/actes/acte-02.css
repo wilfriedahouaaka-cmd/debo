@@ -1,0 +1,391 @@
+/* ==========================================================================
+   Acte 2 — La Première Image
+   Deux copies de la même photo : une floue dessous, une nette dessus.
+   La nette est découpée par clip-path ; la découpe suit le scroll.
+   Rien n'est animé en largeur ou en position : uniquement clip-path et transform.
+   ========================================================================== */
+
+.acte--image {
+  /* La nébuleuse du ciel reste visible autour de la photo sur ordinateur.
+     Sur téléphone, la photo plein écran la recouvre de toute façon. */
+  background-color: transparent;
+}
+
+.image {
+  /* Hauteur définie contre l'écran : sans ça, le pourcentage se résout contre
+     la rangée de grille en auto et le conteneur prend la hauteur de sa piste
+     (220vh) — il ne peut alors jamais défiler. */
+  height: 100vh;
+  height: 100dvh;
+}
+
+/* Le scroll est interne à l'acte : la page, elle, ne défile jamais */
+.image__defilement {
+  height: 100%;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: none;
+}
+
+.image__defilement::-webkit-scrollbar {
+  display: none;
+}
+
+/* La piste donne la longueur du geste : 2,2 écrans, donc 1,2 écran de scroll */
+.image__piste {
+  height: 220vh;
+}
+
+.image__scene {
+  position: sticky;
+  top: 0;
+  height: 100dvh;
+  overflow: hidden;
+  isolation: isolate;
+  background-color: transparent;
+}
+
+/* Le cadre porte la photo : plein écran sur mobile, carte centrée sur desktop */
+.image__cadre {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+
+/* --- Les deux photos ---------------------------------------------------- */
+
+.image__photo {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 50% 32%;
+}
+
+.image__photo--floue {
+  filter: blur(18px) saturate(0.9) brightness(0.72);
+  /* Le flou laisse des bords nets : on déborde légèrement pour les cacher */
+  transform: scale(1.08);
+}
+
+.image__photo--nette {
+  clip-path: inset(0 0 0 100%);
+}
+
+/* Voile côté texte : garantit la lisibilité sans éteindre la photo */
+.image__cadre::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: linear-gradient(
+    to left,
+    rgb(10 7 9 / 0.78) 0%,
+    rgb(10 7 9 / 0.35) 38%,
+    transparent 65%
+  );
+  pointer-events: none;
+}
+
+/* --- Le filet et sa poignée --------------------------------------------- */
+
+.image__ligne {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 100%;
+  z-index: 2;
+  width: 1px;
+  background: linear-gradient(
+    to bottom,
+    transparent,
+    var(--c-accent) 30%,
+    var(--c-accent) 70%,
+    transparent
+  );
+  opacity: 0.55;
+  pointer-events: none;
+}
+
+.image__poignee {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 32px;
+  height: 32px;
+  transform: translate(-50%, -50%);
+  border: 1px solid var(--c-accent);
+  border-radius: var(--r-full);
+  background-color: rgb(10 7 9 / 0.25);
+  backdrop-filter: blur(4px);
+}
+
+/* --- Les textes --------------------------------------------------------- */
+
+.image__textes {
+  position: absolute;
+  top: 50%;
+  right: var(--marge-page);
+  z-index: 3;
+  max-width: 24ch;
+  transform: translateY(-50%);
+  text-align: right;
+}
+
+.image__titre {
+  font-family: var(--font-display);
+  font-size: clamp(2.25rem, 7vw, 4.5rem);
+  font-weight: 300;
+  line-height: var(--lh-tight);
+  letter-spacing: var(--tracking-tight);
+
+  opacity: 0;
+  transform: translateY(14px);
+  transition:
+    opacity 1100ms var(--ease-doux),
+    transform 1100ms var(--ease-doux);
+}
+
+.image__suite {
+  margin-top: var(--sp-4);
+  font-size: var(--fs-base);
+  color: var(--c-text-muted);
+  opacity: 0;
+  transition: opacity 900ms var(--ease-doux) 200ms;
+}
+
+.est-texte .image__titre {
+  opacity: 1;
+  transform: none;
+}
+
+.est-suite .image__suite {
+  opacity: 1;
+}
+
+/* --- Indication de scroll ----------------------------------------------- */
+
+.image__indice {
+  position: absolute;
+  right: var(--marge-page);
+  bottom: calc(var(--sp-8) + env(safe-area-inset-bottom, 0px));
+  z-index: 4;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sp-2);
+
+  font-family: var(--font-text);
+  font-size: var(--fs-xs);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+  color: var(--c-text-muted);
+
+  opacity: 0.75;
+  transition: opacity var(--dur-slow) var(--ease-out);
+  pointer-events: none;
+}
+
+/* Le trait qui descend : le geste attendu, sans mot supplémentaire */
+.image__indice::after {
+  content: "";
+  display: block;
+  width: 1px;
+  height: 1.75rem;
+  background: linear-gradient(to bottom, var(--c-accent), transparent);
+  transform-origin: top;
+  animation: indice 2.6s var(--ease-in-out) infinite;
+}
+
+@keyframes indice {
+  0%,
+  100% {
+    transform: scaleY(0.55);
+    opacity: 0.5;
+  }
+  50% {
+    transform: scaleY(1);
+    opacity: 1;
+  }
+}
+
+.image__indice.est-parti {
+  opacity: 0;
+}
+
+/* --- Le bouton ----------------------------------------------------------- */
+
+.image__pied {
+  position: absolute;
+  left: var(--marge-page);
+  bottom: calc(var(--sp-8) + env(safe-area-inset-bottom, 0px));
+  z-index: 4;
+}
+
+.bouton-suite {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-3);
+  padding: var(--sp-3) var(--sp-6);
+
+  border: 1px solid var(--c-border);
+  color: var(--c-text-muted);
+  font-family: var(--font-text);
+  font-size: var(--fs-xs);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+
+  opacity: 0.35;
+  cursor: default;
+  transition:
+    opacity 500ms var(--ease-out),
+    color var(--dur-base) var(--ease-out),
+    background-color var(--dur-base) var(--ease-out),
+    border-color var(--dur-base) var(--ease-out);
+}
+
+.bouton-suite.est-pret {
+  opacity: 1;
+  cursor: pointer;
+  border-color: var(--c-accent);
+  background-color: var(--c-accent);
+  color: var(--c-accent-ink);
+}
+
+.bouton-suite.est-pret:hover,
+.bouton-suite.est-pret:focus-visible {
+  background-color: var(--c-accent-soft);
+  border-color: var(--c-accent-soft);
+}
+
+/* --- Mobile -------------------------------------------------------------- */
+
+@media (max-width: 640px) {
+  .image__textes {
+    top: auto;
+    right: var(--marge-page);
+    bottom: 24%;
+    left: var(--marge-page);
+    max-width: none;
+    transform: none;
+    text-align: left;
+  }
+
+  .image__pied {
+    bottom: calc(var(--sp-6) + env(safe-area-inset-bottom, 0px));
+  }
+
+  .image__indice {
+    right: var(--marge-page);
+    bottom: calc(var(--sp-6) + env(safe-area-inset-bottom, 0px));
+  }
+}
+
+/* --- Ordinateur : une carte centrée, à l'échelle de la source ------------ */
+
+@media (min-width: 1024px) {
+  .image__scene {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: var(--sp-6);
+
+    padding-top: calc(var(--h-entete) + env(safe-area-inset-top, 0px) + var(--sp-4));
+    padding-right: var(--marge-page);
+    padding-bottom: var(--sp-6);
+    padding-left: var(--marge-page);
+
+    /* Pas de fond propre : la nébuleuse du ciel occupe l'espace autour
+       du cadre. Le cadre et son ombre suffisent à détacher la photo. */
+  }
+
+  .image__cadre {
+    position: relative;
+    inset: auto;
+
+    flex: 0 0 auto;
+    width: auto;
+    max-width: 100%;
+    height: min(60dvh, 36rem);
+
+    /* La bande utile de la photo, sans les marges noires du fichier */
+    aspect-ratio: 540 / 470;
+
+    border: 1px solid var(--c-border);
+    box-shadow: 0 24px 70px -20px rgb(0 0 0 / 0.85);
+  }
+
+  /* On recadre sur le visage : plus d'étirement pleine largeur */
+  .image__photo {
+    object-position: 50% 50%;
+  }
+
+  /* Texte en bas à gauche, comme sur mobile. Un voile vertical suffit :
+     il ne mange pas la moitié droite de la photo. */
+  .image__cadre::after {
+    background:
+      linear-gradient(to top, rgb(10 7 9 / 0.92) 0%, rgb(10 7 9 / 0.5) 26%, transparent 62%),
+      linear-gradient(to left, rgb(10 7 9 / 0.45), transparent 55%);
+  }
+
+  .image__textes {
+    top: auto;
+    right: auto;
+    bottom: var(--sp-6);
+    left: var(--sp-6);
+    max-width: 72%;
+    transform: none;
+    text-align: left;
+  }
+
+  .image__titre {
+    font-size: clamp(2.5rem, 4.2vw, 3.4rem);
+    line-height: 1.05;
+  }
+
+  .image__suite {
+    margin-top: var(--sp-3);
+  }
+
+  /* Le bouton passe sous l'image, centré. Il reste discret tant que la
+     photo n'est pas révélée, mais assez lisible pour être trouvé. */
+  .image__pied {
+    position: static;
+    transform: none;
+  }
+
+  .bouton-suite:not(.est-pret) {
+    opacity: 0.5;
+  }
+
+  .image__indice {
+    bottom: var(--sp-6);
+  }
+}
+
+/* --- Accessibilité ------------------------------------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+  .image__titre,
+  .image__suite,
+  .bouton-suite,
+  .image__indice {
+    transition: none;
+  }
+
+  .image__indice::after {
+    animation: none;
+  }
+
+  /* Une seule photo nette : ni couche floue, ni découpe animée */
+  .image__photo--floue {
+    display: none;
+  }
+
+  .image__photo--nette {
+    clip-path: none !important;
+  }
+}

@@ -1,0 +1,744 @@
+/* ==========================================================================
+   Acte 1 — Le Signal
+   Deux colonnes sur grand écran : la radio, puis le texte.
+   Sur téléphone, tout s'empile et se centre.
+   La lueur dorée reste un halo, jamais un aplat.
+   ========================================================================== */
+
+/* --- Seuil d'entrée : le noir avant la radio ----------------------------- */
+
+.signal-intro {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-seuil);
+
+  /* Noir franc : l'écran doit être vide avant que la radio n'existe. */
+  background-color: var(--c-noir);
+  overflow: hidden;
+  pointer-events: auto;
+
+  opacity: 1;
+  transition: opacity 900ms var(--ease-doux);
+}
+
+.signal-intro.est-parti {
+  opacity: 0;
+}
+
+/* Les étincelles sont des points de 2 à 3 px, jamais des étoiles de fond.
+   Un peu plus vives, un halo plus large, pour qu'on les voie vraiment. */
+.signal-intro__etincelle {
+  position: absolute;
+  left: var(--x);
+  top: var(--y);
+
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+
+  background-color: var(--c-accent);
+  box-shadow:
+    0 0 10px rgb(var(--c-lueur) / 0.9),
+    0 0 20px rgb(var(--c-lueur) / 0.5);
+
+  opacity: 0;
+  transform: scale(0.3);
+  animation: intro-etincelle var(--duree, 2.0s) var(--ease-out) var(--retard, 0ms) both;
+}
+
+/* Une trace verticale fine mais lisible : l'éclair, pas la foudre. */
+.signal-intro__eclair {
+  position: absolute;
+  left: var(--x);
+  top: var(--y);
+
+  width: 1.5px;
+  height: var(--h, 24px);
+
+  background: linear-gradient(
+    to bottom,
+    transparent,
+    var(--c-accent) 45%,
+    transparent
+  );
+
+  opacity: 0;
+  transform: rotate(var(--r, 0deg)) scaleY(0.15);
+  animation: intro-eclair 1.3s var(--ease-out) var(--retard, 0ms) both;
+}
+
+.acte--signal {
+  background-color: transparent; /* laisse voir le ciel de poussière */
+}
+
+.signal {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+
+  padding:
+    calc(var(--h-entete) + env(safe-area-inset-top, 0px) + var(--sp-6))
+    var(--marge-page)
+    calc(var(--sp-6) + env(safe-area-inset-bottom, 0px));
+
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: none;
+}
+
+.signal::-webkit-scrollbar {
+  display: none;
+}
+
+.signal__grille {
+  flex: 1;
+  display: grid;
+  align-content: center;
+  justify-items: center;
+  gap: clamp(1.25rem, 5vh, 2.5rem);
+}
+
+/* --- La radio ------------------------------------------------------------ */
+
+.acte--signal.est-intro .radio {
+  opacity: 0;
+
+  /* Le noir doit cacher la radio instantanément. La transition ne sert
+     qu'à la révélation, quand cette classe est retirée. */
+  transition: none;
+}
+
+.radio {
+  position: relative;
+  display: block;
+  width: min(18rem, 70vw);
+  text-align: left;
+  transition: opacity 1300ms var(--ease-doux);
+}
+
+.radio:disabled {
+  cursor: default;
+}
+
+.radio__aura {
+  position: absolute;
+  inset: -22%;
+  z-index: 0;
+  background: radial-gradient(closest-side, rgb(var(--c-lueur) / 0.24), transparent 72%);
+  filter: blur(18px);
+  pointer-events: none;
+  opacity: 0.85;
+  transition: opacity 700ms var(--ease-doux);
+}
+
+.radio__boite {
+  position: relative;
+  z-index: 1;
+
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+  aspect-ratio: 4 / 3;
+  min-height: 12rem;
+  padding: var(--sp-4);
+
+  border: 1px solid rgb(var(--c-lueur) / 0.45);
+  border-radius: var(--r-objet);
+  background: linear-gradient(160deg, rgb(26 19 27 / 0.96), rgb(13 10 16 / 0.98));
+  box-shadow:
+    0 0 42px -10px rgb(var(--c-lueur) / 0.32),
+    inset 0 0 28px rgb(var(--c-lueur) / 0.05);
+
+  transition:
+    border-color 700ms var(--ease-doux),
+    box-shadow 700ms var(--ease-doux);
+}
+
+/* Haut : témoin, bande de fréquence, voyants */
+.radio__haut {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-2);
+  padding-bottom: var(--sp-3);
+  border-bottom: 1px solid rgb(var(--c-lueur) / 0.18);
+}
+
+.radio__temoin {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background-color: var(--c-accent);
+  box-shadow: 0 0 10px rgb(var(--c-lueur) / 0.8);
+  animation: battre 2.2s var(--ease-in-out) infinite;
+}
+
+.radio__bande {
+  font-family: var(--font-text);
+  font-size: 0.625rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--c-accent-soft);
+  white-space: nowrap;
+}
+
+.radio__frequence {
+  font-variant-numeric: tabular-nums;
+  color: var(--c-text);
+}
+
+.radio__etat {
+  color: var(--c-text-muted);
+}
+
+.radio__voyants {
+  display: flex;
+  gap: 4px;
+}
+
+.radio__voyants i {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background-color: var(--c-signal);
+  opacity: 0.75;
+}
+
+.radio__voyants i:nth-child(2) {
+  background-color: var(--c-accent);
+}
+
+.radio__voyants i:nth-child(3) {
+  background-color: var(--c-success);
+}
+
+/* Milieu : grille du haut-parleur et cadran */
+.radio__milieu {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 1.6fr 1fr;
+  gap: var(--sp-4);
+  align-items: center;
+  min-height: 0;
+}
+
+.radio__grille {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 5px;
+  height: 100%;
+  padding: var(--sp-3);
+
+  border: 1px solid rgb(var(--c-lueur) / 0.16);
+  border-radius: calc(var(--r-objet) / 2);
+  background-color: rgb(0 0 0 / 0.3);
+}
+
+.radio__grille i {
+  height: 2px;
+  border-radius: 1px;
+  background: linear-gradient(to right, rgb(var(--c-lueur) / 0.75), rgb(var(--c-lueur) / 0.05));
+}
+
+.radio__grille i:nth-child(2) {
+  width: 80%;
+}
+
+.radio__grille i:nth-child(4) {
+  width: 72%;
+}
+
+.radio__grille i:nth-child(5) {
+  width: 88%;
+}
+
+.radio__cadran {
+  position: relative;
+  display: grid;
+  place-items: center;
+  justify-self: center;
+  width: min(4.5rem, 92%);
+  aspect-ratio: 1;
+
+  border: 1px solid rgb(var(--c-lueur) / 0.5);
+  border-radius: 50%;
+  background-color: rgb(0 0 0 / 0.45);
+  box-shadow: inset 0 0 18px rgb(var(--c-lueur) / 0.12);
+}
+
+.radio__aiguille {
+  position: absolute;
+  left: 50%;
+  bottom: 50%;
+  width: 1px;
+  height: 42%;
+  background-color: var(--c-accent);
+  transform-origin: bottom center;
+  transform: translateX(-50%) rotate(-24deg);
+  animation: chercher 3.4s steps(7, end) infinite;
+}
+
+.radio__axe {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background-color: var(--c-accent);
+}
+
+/* Bas : molettes et leds */
+.radio__bas {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: var(--sp-3);
+  border-top: 1px solid rgb(var(--c-lueur) / 0.18);
+}
+
+.radio__molette {
+  display: grid;
+  place-items: center;
+  width: 1.75rem;
+  height: 1.75rem;
+
+  border: 1px solid rgb(var(--c-lueur) / 0.4);
+  border-radius: 50%;
+  font-family: var(--font-text);
+  font-size: 0.5rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--c-accent-soft);
+}
+
+.radio__leds {
+  display: flex;
+  gap: 6px;
+}
+
+.radio__leds i {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background-color: var(--c-accent);
+  box-shadow: 0 0 6px rgb(var(--c-lueur) / 0.6);
+}
+
+/* --- Le texte ------------------------------------------------------------ */
+
+.signal__texte {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sp-3);
+  text-align: center;
+}
+
+.signal__etat {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+
+  font-family: var(--font-text);
+  font-size: 0.625rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--c-signal);
+  transition: color 700ms var(--ease-doux);
+}
+
+.signal__point {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: var(--c-signal);
+  box-shadow: 0 0 8px rgb(201 107 107 / 0.8);
+  animation: battre 1.8s var(--ease-in-out) infinite;
+}
+
+.signal__titre {
+  max-width: 14ch;
+  font-family: var(--font-display);
+  font-size: clamp(2.25rem, 9vw, 4.75rem);
+  font-weight: 300;
+  line-height: 1.02;
+  letter-spacing: var(--tracking-tight);
+  color: var(--c-text);
+}
+
+.signal__sous-titre {
+  max-width: 42ch;
+  font-family: var(--font-text);
+  font-size: var(--fs-sm);
+  line-height: 1.65;
+  color: var(--c-text-muted);
+}
+
+/* Le ciel n'est plus uni : une ombre très douce détache les textes clairs
+   des nuages sans ajouter de panneau opaque. */
+.signal__etat,
+.signal__titre,
+.signal__sous-titre,
+.signal__aide,
+.signal__succes {
+  text-shadow:
+    0 1px 16px rgb(10 7 9 / 0.92),
+    0 0 3px rgb(10 7 9 / 0.7);
+}
+
+.signal__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-3);
+  margin-top: var(--sp-2);
+}
+
+.signal__bouton {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-3);
+  min-height: 44px;
+  padding: 0.8rem 1.6rem;
+
+  border: 1px solid rgb(var(--c-lueur) / 0.7);
+  border-radius: var(--r-full);
+  background-color: rgb(var(--c-lueur) / 0.08);
+  color: var(--c-accent-soft);
+
+  font-family: var(--font-text);
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+
+  box-shadow: 0 0 24px -8px rgb(var(--c-lueur) / 0.5);
+  transition:
+    background-color var(--dur-base) var(--ease-out),
+    color var(--dur-base) var(--ease-out),
+    box-shadow var(--dur-base) var(--ease-out),
+    opacity var(--dur-base) var(--ease-out);
+}
+
+.signal__bouton:hover,
+.signal__bouton:focus-visible {
+  background-color: var(--c-accent);
+  color: var(--c-accent-ink);
+  box-shadow: 0 0 34px -6px rgb(var(--c-lueur) / 0.75);
+}
+
+.signal__fleche {
+  display: inline-block;
+  transition: transform var(--dur-base) var(--ease-out);
+}
+
+.signal__bouton:hover .signal__fleche {
+  transform: translateX(3px);
+}
+
+.signal__aide {
+  font-family: var(--font-text);
+  font-size: 0.625rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--c-text-muted);
+  transition: opacity var(--dur-base) var(--ease-out);
+}
+
+.signal__succes {
+  min-height: 1.6em;
+  font-family: var(--font-display);
+  font-size: clamp(1rem, 3.4vw, 1.25rem);
+  font-style: italic;
+  color: var(--c-accent-soft);
+
+  opacity: 0;
+  transform: translateY(6px);
+  transition:
+    opacity 900ms var(--ease-doux),
+    transform 900ms var(--ease-doux);
+}
+
+/* --- Pied de l'acte ------------------------------------------------------ */
+
+.signal__pied {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  padding-top: var(--sp-6);
+
+  font-family: var(--font-text);
+  font-size: 0.625rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--c-text-muted);
+}
+
+.signal__onde {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  height: 10px;
+}
+
+.signal__onde i {
+  width: 2px;
+  height: 100%;
+  background-color: var(--c-accent);
+  transform-origin: center;
+  animation: onde-pied 1.4s var(--ease-in-out) infinite alternate;
+}
+
+.signal__onde i:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.signal__onde i:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+/* --- État verrouillé ----------------------------------------------------- */
+
+.est-verrouille .radio__boite {
+  border-color: rgb(var(--c-lueur) / 0.8);
+  box-shadow:
+    0 0 60px -8px rgb(var(--c-lueur) / 0.5),
+    inset 0 0 34px rgb(var(--c-lueur) / 0.08);
+}
+
+.est-verrouille .radio__aura {
+  opacity: 1;
+}
+
+.est-verrouille .radio__temoin,
+.est-verrouille .signal__point {
+  animation: none;
+}
+
+.est-verrouille .radio__bande {
+  color: var(--c-text);
+}
+
+.est-verrouille .radio__etat {
+  color: var(--c-accent-soft);
+}
+
+.est-verrouille .radio__aiguille {
+  animation: none;
+  transform: translateX(-50%) rotate(0deg);
+}
+
+.est-verrouille .signal__etat {
+  color: var(--c-accent-soft);
+}
+
+.est-verrouille .signal__point {
+  background-color: var(--c-accent);
+  box-shadow: 0 0 8px rgb(var(--c-lueur) / 0.8);
+}
+
+.est-verrouille .signal__bouton {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.est-verrouille .signal__aide {
+  opacity: 0;
+}
+
+.est-accueil .signal__succes {
+  opacity: 1;
+  transform: none;
+}
+
+/* --- Grand écran --------------------------------------------------------- */
+
+@media (min-width: 900px) {
+  .signal {
+    justify-content: center;
+  }
+
+  .signal__grille {
+    grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr);
+    align-items: center;
+    justify-items: stretch;
+    gap: clamp(3rem, 6vw, 6rem);
+    width: 100%;
+    max-width: 72rem;
+    margin-inline: auto;
+  }
+
+  .radio {
+    width: min(23rem, 32vw);
+    justify-self: center;
+  }
+
+  .signal__texte {
+    position: relative;
+    isolation: isolate;
+    align-items: flex-start;
+    text-align: left;
+  }
+
+  /* Voile local derrière la colonne de texte : le contraste reste franc
+     même quand la nébuleuse est claire à cet endroit. Le masque ovale
+     évite l'effet de panneau : les bords se fondent dans le ciel. */
+  .signal__texte::before {
+    content: "";
+    position: absolute;
+    inset: -2.5rem -3rem;
+    z-index: -1;
+    background-color: rgb(10 7 9 / 0.55);
+    -webkit-mask-image: radial-gradient(
+      ellipse at 50% 50%,
+      #000 0%,
+      #000 45%,
+      transparent 78%
+    );
+    mask-image: radial-gradient(
+      ellipse at 50% 50%,
+      #000 0%,
+      #000 45%,
+      transparent 78%
+    );
+    pointer-events: none;
+  }
+
+  .signal__actions {
+    justify-content: flex-start;
+  }
+
+  .signal__titre {
+    max-width: 12ch;
+  }
+
+  .signal__sous-titre {
+    font-size: var(--fs-base);
+  }
+}
+
+/* --- Animations ---------------------------------------------------------- */
+
+@keyframes battre {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.35;
+  }
+}
+
+@keyframes chercher {
+  0%,
+  100% {
+    transform: translateX(-50%) rotate(-26deg);
+  }
+  35% {
+    transform: translateX(-50%) rotate(14deg);
+  }
+  60% {
+    transform: translateX(-50%) rotate(-8deg);
+  }
+  80% {
+    transform: translateX(-50%) rotate(22deg);
+  }
+}
+
+@keyframes onde-pied {
+  from {
+    transform: scaleY(0.35);
+  }
+  to {
+    transform: scaleY(1);
+  }
+}
+
+@keyframes intro-etincelle {
+  0%,
+  14%,
+  28%,
+  42%,
+  56%,
+  70%,
+  84%,
+  100% {
+    opacity: 0;
+    transform: scale(0.3);
+  }
+  6% {
+    opacity: 0.85;
+    transform: scale(1);
+  }
+  20% {
+    opacity: 0.35;
+    transform: scale(0.65);
+  }
+  34% {
+    opacity: 0.65;
+    transform: scale(0.9);
+  }
+  48% {
+    opacity: 0.3;
+    transform: scale(0.55);
+  }
+  62% {
+    opacity: 0.55;
+    transform: scale(0.85);
+  }
+  76% {
+    opacity: 0.25;
+    transform: scale(0.5);
+  }
+}
+
+@keyframes intro-eclair {
+  0%,
+  100% {
+    opacity: 0;
+    transform: rotate(var(--r, 0deg)) scaleY(0.15);
+  }
+  6% {
+    opacity: 0.6;
+    transform: rotate(var(--r, 0deg)) scaleY(1);
+  }
+  12% {
+    opacity: 0;
+    transform: rotate(var(--r, 0deg)) scaleY(0.7);
+  }
+}
+
+/* --- Accessibilité ------------------------------------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+  .signal-intro {
+    display: none;
+  }
+
+  .signal-intro__etincelle,
+  .signal-intro__eclair {
+    animation: none;
+  }
+
+  .radio {
+    transition: none;
+  }
+
+  .radio__temoin,
+  .signal__point,
+  .radio__aiguille,
+  .signal__onde i {
+    animation: none;
+  }
+
+  .radio__aiguille {
+    transform: translateX(-50%) rotate(0deg);
+  }
+
+  .signal__succes,
+  .signal__bouton,
+  .signal__aide {
+    transition: none;
+  }
+}

@@ -1,0 +1,80 @@
+/* ==========================================================================
+   Ciel de poussière dorée
+   Dix-huit points très petits, animés en CSS uniquement.
+   Aucun canvas, aucun requestAnimationFrame : rien à faire tourner en fond.
+   ========================================================================== */
+
+.ciel {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+  background-color: var(--c-bg);
+}
+
+/* La nébuleuse occupe tout le ciel. Le chemin est injecté par ciel.js :
+   aucune adresse de fichier n'est écrite dans cette feuille de style. */
+.ciel::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background-image: var(--fond-nebuleuse, none);
+  background-repeat: no-repeat;
+  background-position: 50% 45%;
+  background-size: cover;
+  opacity: 0.8;
+}
+
+/* Voile de lisibilité : les bords et le bas se referment, le centre respire.
+   Sans lui, les nuages clairs mangeraient le texte et le bouton. */
+.ciel::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background:
+    radial-gradient(
+      ellipse at 50% 42%,
+      transparent 16%,
+      rgb(10 7 9 / 0.3) 62%,
+      rgb(10 7 9 / 0.82) 100%
+    ),
+    linear-gradient(
+      to bottom,
+      rgb(10 7 9 / 0.62) 0%,
+      transparent 24%,
+      transparent 62%,
+      rgb(10 7 9 / 0.78) 100%
+    );
+}
+
+.ciel i {
+  position: absolute;
+  z-index: 2;
+  width: var(--taille, 2px);
+  height: var(--taille, 2px);
+  border-radius: 50%;
+  background-color: var(--c-accent-soft);
+  opacity: 0.12;
+  box-shadow: 0 0 6px rgb(var(--c-lueur) / 0.35);
+  animation: scintiller var(--duree, 7s) var(--ease-in-out) var(--retard, 0s) infinite;
+}
+
+@keyframes scintiller {
+  0%,
+  100% {
+    opacity: 0.08;
+  }
+  50% {
+    opacity: 0.38;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ciel i {
+    animation: none;
+    opacity: 0.18;
+  }
+}

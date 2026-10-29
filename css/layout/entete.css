@@ -1,0 +1,223 @@
+/* ==========================================================================
+   En-tête fixe, bouton de son, progression
+   L'en-tête ne capte jamais les clics : seule la pastille de son est active.
+   ========================================================================== */
+
+@media (min-width: 900px) {
+  :root {
+    --h-entete: 4.5rem;
+  }
+}
+
+.entete {
+  position: fixed;
+  inset: 0 0 auto 0;
+  z-index: var(--z-navigation);
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-4);
+
+  height: calc(var(--h-entete) + env(safe-area-inset-top, 0px));
+  padding: env(safe-area-inset-top, 0px) var(--marge-page) 0;
+
+  /* Voile très léger : le texte reste lisible au-dessus d'une photo */
+  background: linear-gradient(to bottom, rgb(10 7 9 / 0.9), rgb(10 7 9 / 0));
+  pointer-events: none;
+}
+
+.entete__acte {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+
+  font-family: var(--font-text);
+  font-size: var(--fs-xs);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.entete__numero {
+  color: var(--c-accent);
+  font-weight: 600;
+}
+
+.entete__point {
+  color: var(--c-text-muted);
+  opacity: 0.5;
+}
+
+.entete__titre {
+  color: var(--c-text-muted);
+}
+
+.entete__outils {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-4);
+}
+
+.entete__signature {
+  font-family: var(--font-display);
+  font-size: var(--fs-sm);
+  font-style: italic;
+  letter-spacing: 0.08em;
+  color: var(--c-text-muted);
+  opacity: 0.75;
+}
+
+/* --- Le bouton de son ---------------------------------------------------- */
+
+.son {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  padding: var(--sp-2) var(--sp-3);
+  pointer-events: auto;
+
+  border: 1px solid rgb(var(--c-lueur) / 0.3);
+  border-radius: var(--r-full);
+  background-color: rgb(18 13 19 / 0.55);
+  backdrop-filter: blur(8px);
+  color: var(--c-accent-soft);
+
+  font-family: var(--font-text);
+  font-size: 0.625rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  white-space: nowrap;
+
+  transition:
+    border-color var(--dur-base) var(--ease-out),
+    color var(--dur-base) var(--ease-out),
+    background-color var(--dur-base) var(--ease-out);
+}
+
+.son:hover {
+  border-color: rgb(var(--c-lueur) / 0.6);
+  color: var(--c-text);
+}
+
+.son__barres {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  height: 14px;
+}
+
+.son__barres i {
+  display: block;
+  width: 2px;
+  height: 100%;
+  border-radius: 1px;
+  background-color: currentColor;
+  transform-origin: center;
+  animation: onde 1.1s var(--ease-in-out) infinite alternate;
+}
+
+.son__barres i:nth-child(1) {
+  animation-delay: 0s;
+}
+.son__barres i:nth-child(2) {
+  animation-delay: 0.14s;
+}
+.son__barres i:nth-child(3) {
+  animation-delay: 0.28s;
+}
+.son__barres i:nth-child(4) {
+  animation-delay: 0.42s;
+}
+
+/* Son coupé : les barres se figent au ras du sol */
+.son[aria-pressed="false"] {
+  color: var(--c-text-muted);
+}
+
+.son[aria-pressed="false"] .son__barres i {
+  animation: none;
+  transform: scaleY(0.2);
+  opacity: 0.6;
+}
+
+@keyframes onde {
+  from {
+    transform: scaleY(0.35);
+  }
+  to {
+    transform: scaleY(1);
+  }
+}
+
+/* --- Progression --------------------------------------------------------- */
+
+.points {
+  position: fixed;
+  right: clamp(1rem, 2vw, 1.75rem);
+  top: 50%;
+  z-index: var(--z-navigation);
+  transform: translateY(-50%);
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sp-3);
+
+  pointer-events: none;
+}
+
+.points i {
+  display: block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: rgb(242 236 239 / 0.18);
+  transition:
+    background-color var(--dur-base) var(--ease-out),
+    box-shadow var(--dur-base) var(--ease-out),
+    transform var(--dur-base) var(--ease-out);
+}
+
+.points i.est-passe {
+  background-color: rgb(var(--c-lueur) / 0.45);
+}
+
+.points i.est-actif {
+  background-color: var(--c-accent);
+  transform: scale(1.4);
+  box-shadow: 0 0 10px rgb(var(--c-lueur) / 0.8);
+}
+
+/* --- Adaptation ---------------------------------------------------------- */
+
+@media (max-width: 899px) {
+  .points {
+    display: none;
+  }
+
+  .entete__signature {
+    display: none;
+  }
+}
+
+@media (max-width: 639px) {
+  .entete__titre,
+  .entete__point {
+    display: none;
+  }
+}
+
+/* --- Accessibilité ------------------------------------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+  .son__barres i {
+    animation: none;
+    transform: scaleY(0.6);
+  }
+
+  .points i,
+  .son {
+    transition: none;
+  }
+}

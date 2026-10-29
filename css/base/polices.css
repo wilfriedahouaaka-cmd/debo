@@ -1,0 +1,23 @@
+/* ==========================================================================
+   Polices auto-hébergées — « Les Fréquences Cachées »
+   Cormorant Garamond (titres) et Karla (texte), conformément au scénario.
+   Aucun appel à Google Fonts : les fichiers sont servis depuis /fonts.
+   Chaque famille est une police variable : un seul fichier couvre toutes
+   les graisses utilisées par le site. Licences SIL OFL dans /fonts.
+   ========================================================================== */
+
+@font-face {
+  font-family: "Cormorant Garamond";
+  font-style: normal;
+  font-weight: 300 700;
+  font-display: swap;
+  src: url("../../fonts/CormorantGaramond-Variable.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "Karla";
+  font-style: normal;
+  font-weight: 200 800;
+  font-display: swap;
+  src: url("../../fonts/Karla-Variable.woff2") format("woff2");
+}

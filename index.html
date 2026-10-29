@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="fr" data-etat="initial">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+
+  <title>Les Fréquences Cachées — pour Déborah</title>
+  <meta name="description" content="Une expérience sonore et visuelle en sept actes.">
+
+  <!-- Le site est un cadeau privé : on le garde hors des moteurs de recherche -->
+  <meta name="robots" content="noindex, nofollow">
+
+  <!-- Couleur de la barre du navigateur sur mobile (identique à --c-bg) -->
+  <meta name="theme-color" content="#0a0709">
+  <meta name="color-scheme" content="dark">
+
+  <!-- Favicon provisoire : évite une requête 404 en attendant le vrai -->
+  <link rel="icon" href="data:,">
+
+  <link rel="stylesheet" href="css/main.css">
+
+  <script type="module" src="js/main.js"></script>
+</head>
+
+<body>
+  <!-- Écran de préchargement : dévoilé par main.js, stylé par css/ui/seuil.css -->
+  <div id="prechargement" class="prechargement"
+       role="status" aria-live="polite" aria-label="Chargement de l'expérience">
+    <p class="prechargement__libelle">Chargement</p>
+    <progress id="prechargement-jauge" class="prechargement__jauge" value="0" max="100">0 %</progress>
+  </div>
+
+  <!-- Seuil noir de l'Acte 1 : présent dès le premier rendu pour éviter
+       que la nébuleuse apparaisse entre le préchargement et la radio. -->
+  <div id="signal-intro" class="signal-intro" aria-hidden="true"></div>
+
+  <!-- En-tête fixe : acte en cours, son, signature -->
+  <header class="entete" id="entete">
+    <p class="entete__acte">
+      <span class="entete__numero" id="entete-numero">Acte 1</span>
+      <span class="entete__point" aria-hidden="true">·</span>
+      <span class="entete__titre" id="entete-titre">Le Signal</span>
+    </p>
+
+    <div class="entete__outils">
+      <button class="son" id="bouton-son" type="button" aria-pressed="true">
+        <span class="son__barres" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
+        <span class="son__libelle" id="son-libelle">Fréquence active</span>
+      </button>
+      <p class="entete__signature">Déborah <span aria-hidden="true">×</span> Wilfried</p>
+    </div>
+  </header>
+
+  <!-- Progression des sept actes (purement visuelle, non cliquable) -->
+  <div class="points" id="points" aria-hidden="true"></div>
+
+  <!-- Scène unique : les sept actes sont montés ici par js/core/scene-manager.js -->
+  <main id="scene" class="scene" tabindex="-1" aria-label="Les Fréquences Cachées">
+    <div class="ciel" id="ciel" aria-hidden="true"></div>
+    <!-- Acte 01 → 07 : injectés par leurs modules respectifs -->
+  </main>
+
+  <!-- Zone d'annonces pour les lecteurs d'écran (changements d'acte, états audio) -->
+  <div id="annonces" class="sr-only" aria-live="polite" aria-atomic="true"></div>
+
+  <noscript>
+    <p>Cette expérience utilise JavaScript pour se dérouler. Merci de l'activer dans votre navigateur.</p>
+  </noscript>
+</body>
+</html>

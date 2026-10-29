@@ -1,0 +1,368 @@
+/* ==========================================================================
+   Acte 5 — Le Lien
+   Trois fréquences, sept lettres, un prénom, un message.
+   La nébuleuse reste derrière : un voile local la calme sans l'effacer.
+   ========================================================================== */
+
+.acte--lien {
+  background-color: transparent;
+}
+
+.lien {
+  position: relative;
+
+  display: grid;
+  place-items: center;
+  width: 100%;
+  min-height: 100%;
+  padding:
+    calc(var(--h-entete) + var(--sp-8))
+    var(--marge-page)
+    calc(var(--sp-8) + env(safe-area-inset-bottom, 0px));
+
+  overflow: hidden;
+
+  /* Voile local : les lettres et le message doivent rester lisibles sur
+     les nuages clairs de la nébuleuse. Le centre reste ouvert. */
+  background: radial-gradient(
+    ellipse at 50% 44%,
+    rgb(10 7 9 / 0.18),
+    rgb(10 7 9 / 0.72) 76%
+  );
+}
+
+/* --- Les trois fréquences ------------------------------------------------- */
+
+.lien__frequences {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.lien__frequence {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+
+  width: min(58vw, 40rem);
+  height: 1px;
+
+  background: linear-gradient(90deg, transparent, var(--teinte), transparent);
+  box-shadow: 0 0 10px -3px var(--teinte);
+  transform-origin: center;
+  opacity: 0;
+}
+
+.lien__frequence--rose {
+  --teinte: var(--c-rose);
+  --fx: -72vw;
+  --fy: -10vh;
+  --fa: -12deg;
+  --fb: -4deg;
+  --retard: 0ms;
+}
+
+.lien__frequence--or {
+  --teinte: var(--c-accent);
+  --fx: 72vw;
+  --fy: -4vh;
+  --fa: 10deg;
+  --fb: 2deg;
+  --retard: 120ms;
+}
+
+.lien__frequence--violet {
+  --teinte: var(--c-violet-clair);
+  --fx: 0vw;
+  --fy: 64vh;
+  --fa: -76deg;
+  --fb: 84deg;
+  --retard: 240ms;
+}
+
+.lien__collision {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+
+  background-color: var(--c-accent-soft);
+  opacity: 0;
+  transform: translate(-50%, -50%) scale(0.4);
+}
+
+@keyframes lien-frequence {
+  0% {
+    opacity: 0;
+    transform:
+      translate(-50%, -50%)
+      translate(var(--fx), var(--fy))
+      rotate(var(--fa))
+      scaleX(0.35);
+  }
+
+  12% {
+    opacity: 0.9;
+  }
+
+  55% {
+    opacity: 0.9;
+    transform:
+      translate(-50%, -50%)
+      translate(0, 0)
+      rotate(var(--fb))
+      scaleX(1);
+  }
+
+  70% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0;
+    transform:
+      translate(-50%, -50%)
+      translate(0, 0)
+      rotate(var(--fb))
+      scaleX(1.06);
+  }
+}
+
+@keyframes lien-collision {
+  0%,
+  55% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.4);
+  }
+
+  65% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1.8);
+  }
+
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(3);
+  }
+}
+
+.lien.est-visible .lien__frequence {
+  animation: lien-frequence 2200ms var(--ease-in-out) var(--retard) both;
+}
+
+.lien.est-visible .lien__collision {
+  animation: lien-collision 1500ms var(--ease-out) 1500ms both;
+}
+
+/* --- Le contenu ----------------------------------------------------------- */
+
+.lien__contenu {
+  position: relative;
+  z-index: 1;
+
+  display: grid;
+  grid-template-rows: auto auto auto;
+  justify-items: center;
+  row-gap: clamp(1.25rem, 3.5vh, 2rem);
+
+  width: 100%;
+  max-width: 44rem;
+}
+
+/* --- Le prénom ------------------------------------------------------------ */
+
+.lien__nom {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: clamp(3.4rem, 13vw, 8rem);
+  font-weight: 300;
+  line-height: 0.9;
+  letter-spacing: -0.035em;
+  color: var(--c-text);
+  text-shadow:
+    0 1px 22px rgb(10 7 9 / 0.9),
+    0 0 4px rgb(10 7 9 / 0.65);
+}
+
+.lien__mot {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  white-space: nowrap;
+}
+
+.lien__lettre {
+  display: inline-block;
+  color: var(--teinte);
+  opacity: 0;
+  transform-origin: 50% 60%;
+  will-change: transform, opacity;
+}
+
+/* La trajectoire est une traversée : chaque lettre part d'un bord différent,
+   se croise avec les autres, puis se pose. Aucun hasard. */
+@keyframes lien-lettre {
+  0% {
+    opacity: 0;
+    color: var(--teinte);
+    transform: translate(var(--dx), var(--dy)) rotate(var(--angle));
+  }
+
+  12% {
+    opacity: 1;
+  }
+
+  65% {
+    color: var(--teinte);
+    transform: translate(-0.08em, -0.03em) rotate(-1.5deg);
+  }
+
+  80% {
+    color: var(--teinte);
+    transform: translate(0, 0) rotate(0deg);
+  }
+
+  100% {
+    opacity: 1;
+    color: var(--c-text);
+    transform: translate(0, 0) rotate(0deg);
+  }
+}
+
+.lien.est-visible .lien__lettre {
+  animation: lien-lettre 2400ms var(--ease-in-out) var(--retard, 0ms) both;
+}
+
+/* --- Le message ----------------------------------------------------------- */
+
+.lien__texte {
+  width: 100%;
+  max-width: 36rem;
+
+  /* On réserve la hauteur du message final : le prénom ne bougera pas
+     quand les lignes apparaissent. */
+  min-height: 8.5rem;
+  text-align: center;
+}
+
+.lien__message {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: clamp(1.05rem, 2.4vw, 1.3rem);
+  font-weight: 400;
+  line-height: 1.6;
+  text-wrap: pretty;
+  color: var(--c-text);
+  text-shadow:
+    0 1px 16px rgb(10 7 9 / 0.92),
+    0 0 3px rgb(10 7 9 / 0.75);
+  white-space: pre-line;
+}
+
+/* --- La suite ------------------------------------------------------------- */
+
+.lien__pied {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 3.25rem;
+}
+
+.lien__suite {
+  min-height: 44px;
+  padding: 0.65rem 1.15rem;
+
+  border: 1px solid transparent;
+  background-color: transparent;
+  color: var(--c-text-muted);
+
+  font-family: var(--font-text);
+  font-size: var(--fs-xs);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+
+  cursor: pointer;
+  opacity: 0;
+  transition:
+    opacity 600ms var(--ease-out),
+    color var(--dur-base) var(--ease-out),
+    border-color var(--dur-base) var(--ease-out);
+}
+
+.lien__suite.est-visible {
+  opacity: 1;
+}
+
+.lien__suite:hover,
+.lien__suite:focus-visible {
+  border-color: rgb(var(--c-lueur) / 0.45);
+  color: var(--c-accent-soft);
+}
+
+/* --- Écrans intermédiaires ------------------------------------------------- */
+
+@media (max-width: 899px) {
+  .lien__texte {
+    min-height: 10.5rem;
+  }
+}
+
+/* --- Grand écran ---------------------------------------------------------- */
+
+@media (min-width: 1000px) {
+  .lien__contenu {
+    max-width: 52rem;
+  }
+
+  .lien__texte {
+    max-width: 38rem;
+  }
+}
+
+/* --- Téléphone ------------------------------------------------------------ */
+
+@media (max-width: 639px) {
+  .lien {
+    padding-top: calc(var(--h-entete) + var(--sp-6));
+    padding-bottom: calc(var(--sp-6) + env(safe-area-inset-bottom, 0px));
+  }
+
+  .lien__contenu {
+    row-gap: var(--sp-4);
+  }
+
+  .lien__texte {
+    min-height: 11.5rem;
+  }
+
+  .lien__message {
+    font-size: 1.02rem;
+    line-height: 1.55;
+  }
+}
+
+/* --- Mouvement réduit ----------------------------------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+  /* Pas de chaos : le prénom est simplement là, puis le message s'affiche.
+     Le texte complet reste évidemment disponible. */
+  .lien__frequence,
+  .lien__collision {
+    display: none;
+  }
+
+  .lien.est-visible .lien__lettre {
+    animation: none;
+    opacity: 1;
+    color: var(--c-text);
+    transform: none;
+  }
+
+  .lien__suite {
+    transition: none;
+  }
+}

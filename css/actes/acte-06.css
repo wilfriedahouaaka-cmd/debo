@@ -1,0 +1,123 @@
+/* ==========================================================================
+   Acte 6 — Le Silence
+   Un fond identique à --c-bg, aucune texture, aucune particule.
+   L'en-tête et la progression sont masqués le temps du silence.
+   ========================================================================== */
+
+.acte--silence {
+  background-color: var(--c-bg);
+}
+
+/* L'acte est monté sous l'en-tête fixe : ce n'est pas un z-index qui peut
+   le couvrir. On retire donc l'en-tête et les points par une classe dédiée,
+   le temps du silence. L'inert est posé en JavaScript en même temps. */
+.entete.est-silence,
+.points.est-silence {
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    opacity 600ms var(--ease-out),
+    visibility 0s linear 600ms;
+}
+
+.silence {
+  position: relative;
+
+  display: grid;
+  place-items: center;
+  width: 100%;
+  min-height: 100%;
+
+  padding:
+    calc(var(--h-entete) + var(--sp-8))
+    var(--marge-page)
+    calc(var(--sp-8) + env(safe-area-inset-bottom, 0px));
+}
+
+/* --- La phrase ------------------------------------------------------------ */
+
+.silence__phrase {
+  max-width: 18ch;
+  margin: 0;
+
+  font-family: var(--font-display);
+  font-size: clamp(2.6rem, 8vw, 5.5rem);
+  font-weight: 300;
+  line-height: 1.05;
+  letter-spacing: var(--tracking-tight);
+  text-align: center;
+  text-wrap: balance;
+  color: var(--c-text);
+
+  opacity: 0;
+  transition: opacity 2000ms var(--ease-doux);
+}
+
+.silence__phrase.est-visible {
+  opacity: 1;
+}
+
+/* --- La suite ------------------------------------------------------------- */
+
+.silence__pied {
+  position: absolute;
+  right: 0;
+  bottom: calc(var(--sp-8) + env(safe-area-inset-bottom, 0px));
+  left: 0;
+
+  display: flex;
+  justify-content: center;
+}
+
+.silence__suite {
+  min-height: 44px;
+  padding: 0.65rem 1.15rem;
+
+  border: 1px solid transparent;
+  background-color: transparent;
+  color: var(--c-text-muted);
+
+  font-family: var(--font-text);
+  font-size: var(--fs-xs);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+
+  cursor: pointer;
+  opacity: 0;
+  transition:
+    opacity 700ms var(--ease-out),
+    color var(--dur-base) var(--ease-out),
+    border-color var(--dur-base) var(--ease-out);
+}
+
+.silence__suite.est-visible {
+  opacity: 1;
+}
+
+.silence__suite:hover,
+.silence__suite:focus-visible {
+  border-color: rgb(var(--c-lueur) / 0.45);
+  color: var(--c-accent-soft);
+}
+
+/* --- Téléphone ------------------------------------------------------------ */
+
+@media (max-width: 639px) {
+  .silence {
+    padding-top: calc(var(--h-entete) + var(--sp-6));
+    padding-bottom: calc(var(--sp-6) + env(safe-area-inset-bottom, 0px));
+  }
+
+  .silence__pied {
+    bottom: calc(var(--sp-6) + env(safe-area-inset-bottom, 0px));
+  }
+}
+
+/* --- Mouvement réduit ----------------------------------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+  .silence__phrase,
+  .silence__suite {
+    transition: none;
+  }
+}

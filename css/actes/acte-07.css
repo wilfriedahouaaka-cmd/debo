@@ -1,0 +1,221 @@
+/* ==========================================================================
+   Acte 7 — La Fin
+   Un gris très sombre, trois battements, une lettre, un lien.
+   Pas de nébuleuse ici : la lumière se réduit à la lettre et au bouton.
+   ========================================================================== */
+
+.acte--fin {
+  background-color: var(--c-surface);
+}
+
+.fin {
+  position: relative;
+
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  width: 100%;
+  min-height: 100%;
+
+  padding:
+    calc(var(--h-entete) + var(--sp-6))
+    var(--marge-page)
+    calc(var(--sp-8) + env(safe-area-inset-bottom, 0px));
+
+  overflow: hidden;
+}
+
+/* --- Le battement --------------------------------------------------------- */
+
+.fin__coeur {
+  justify-self: center;
+
+  width: 5px;
+  height: 5px;
+  margin-top: var(--sp-2);
+  border-radius: 50%;
+
+  background-color: var(--c-accent);
+  box-shadow: 0 0 12px 2px rgb(var(--c-lueur) / 0.35);
+
+  opacity: 0;
+}
+
+@keyframes fin-battre {
+  0%,
+  100% {
+    opacity: 0.35;
+    transform: scale(1);
+    box-shadow: 0 0 10px 1px rgb(var(--c-lueur) / 0.25);
+  }
+
+  18% {
+    opacity: 1;
+    transform: scale(2.1);
+    box-shadow: 0 0 18px 4px rgb(var(--c-lueur) / 0.5);
+  }
+
+  40% {
+    opacity: 0.45;
+    transform: scale(1);
+  }
+}
+
+.fin.est-visible .fin__coeur {
+  animation: fin-battre 900ms var(--ease-in-out) 3 both;
+}
+
+/* --- La lettre ------------------------------------------------------------ */
+
+.fin__lettre {
+  align-self: center;
+
+  width: 100%;
+  max-width: 36rem;
+  margin: 0 auto;
+}
+
+.fin__salutation {
+  margin: 0 0 var(--sp-4);
+
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 6vw, 3rem);
+  font-weight: 300;
+  line-height: 1;
+  letter-spacing: var(--tracking-tight);
+  color: var(--c-text);
+
+  opacity: 0;
+  transform: translateY(6px);
+  transition:
+    opacity 1200ms var(--ease-out),
+    transform 1200ms var(--ease-out);
+}
+
+.fin.est-visible .fin__salutation {
+  opacity: 1;
+  transform: none;
+}
+
+.fin__texte {
+  /* La hauteur du corps est réservée dès le départ : la lettre reste
+     centrée et la salutation ne monte pas pendant que le texte s'écrit. */
+  min-height: 9.5rem;
+  margin: 0;
+
+  font-family: var(--font-text);
+  font-size: clamp(0.98rem, 3.4vw, 1.08rem);
+  line-height: 1.7;
+  color: var(--c-text);
+  text-wrap: pretty;
+  white-space: pre-line;
+}
+
+.fin__signature {
+  margin: var(--sp-6) 0 0;
+
+  font-family: var(--font-display);
+  font-size: clamp(1.25rem, 3vw, 1.6rem);
+  font-style: italic;
+  letter-spacing: 0.02em;
+  text-align: right;
+  color: var(--c-accent-soft);
+
+  opacity: 0;
+  transition: opacity 1200ms var(--ease-doux);
+}
+
+.fin__signature.est-visible {
+  opacity: 1;
+}
+
+/* --- Le bouton final ------------------------------------------------------ */
+
+.fin__pied {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  min-height: 4rem;
+}
+
+.fin__bouton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  max-width: 100%;
+  min-height: 48px;
+  padding: 0.85rem 1.5rem;
+
+  border: 1px solid rgb(var(--c-lueur) / 0.65);
+  background-color: transparent;
+  color: var(--c-accent-soft);
+
+  font-family: var(--font-text);
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  line-height: 1.4;
+  letter-spacing: var(--tracking-wide);
+  text-align: center;
+  text-transform: uppercase;
+
+  cursor: pointer;
+  opacity: 0;
+  transition:
+    opacity 800ms var(--ease-out),
+    background-color var(--dur-base) var(--ease-out),
+    border-color var(--dur-base) var(--ease-out),
+    color var(--dur-base) var(--ease-out);
+}
+
+.fin__bouton.est-visible {
+  opacity: 1;
+}
+
+.fin__bouton:hover,
+.fin__bouton:focus-visible {
+  border-color: var(--c-accent);
+  background-color: var(--c-accent);
+  color: var(--c-accent-ink);
+}
+
+/* --- Téléphone ------------------------------------------------------------ */
+
+@media (max-width: 639px) {
+  .fin {
+    padding-top: calc(var(--h-entete) + var(--sp-4));
+    padding-bottom: calc(var(--sp-6) + env(safe-area-inset-bottom, 0px));
+  }
+
+  .fin__salutation {
+    font-size: 2.1rem;
+  }
+
+  .fin__texte {
+    min-height: 13rem;
+    font-size: 1rem;
+    line-height: 1.65;
+  }
+
+  .fin__signature {
+    margin-top: var(--sp-4);
+  }
+}
+
+/* --- Mouvement réduit ----------------------------------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+  .fin.est-visible .fin__coeur {
+    animation: none;
+    opacity: 0.55;
+  }
+
+  .fin__salutation,
+  .fin__signature,
+  .fin__bouton {
+    transition: none;
+  }
+
+  .fin.est-visible .fin__salutation {
+    transform: none;
+  }
+}

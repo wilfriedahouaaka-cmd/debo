@@ -1,0 +1,42 @@
+/* ==========================================================================
+   Structure des actes
+   Un acte = une section plein écran. Un seul est visible à la fois.
+   Le scroll global est impossible : l'expérience avance par actes.
+   ========================================================================== */
+
+.scene {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  background-color: var(--c-bg);
+}
+
+.acte {
+  position: absolute;
+  inset: 0;
+  display: grid;
+
+  /* Sortie : l'acte disparaît en fondu, puis devient invisible une fois
+     le fondu terminé. Sans ce délai sur visibility, le fondu serait coupé. */
+  visibility: hidden;
+  opacity: 0;
+  transition:
+    opacity var(--dur-scene) var(--ease-doux),
+    visibility 0s linear var(--dur-scene);
+}
+
+.acte.est-actif {
+  visibility: visible;
+  opacity: 1;
+  transition:
+    opacity var(--dur-scene) var(--ease-doux),
+    visibility 0s linear 0s;
+}
+
+/* Accessibilité : pas de fondu, on passe directement */
+@media (prefers-reduced-motion: reduce) {
+  .acte,
+  .acte.est-actif {
+    transition: none;
+  }
+}

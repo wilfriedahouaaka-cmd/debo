@@ -1,0 +1,908 @@
+/* ==========================================================================
+   Acte 4 — Le Crescendo
+   Trois mouvements : la constellation, la première photo, les souvenirs.
+   Le vide fait partie de la mise en page : chaque souvenir est séparé du
+   suivant par au moins un demi-écran. Les photos ne sont jamais alignées
+   dans une grille régulière, sinon l'acte ressemblerait à une galerie.
+   ========================================================================== */
+
+.acte--crescendo {
+  /* La nébuleuse respire derrière les souvenirs */
+  background-color: transparent;
+}
+
+.crescendo {
+  position: relative;
+  height: 100%;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: none;
+
+  /* Le fil doré se remplit à mesure : la valeur est posée par le JavaScript. */
+  --progression: 0;
+
+  background:
+    linear-gradient(to bottom, rgb(10 7 9 / 0.16), transparent 18%),
+    linear-gradient(to bottom, transparent 82%, rgb(10 7 9 / 0.62));
+}
+
+.crescendo::-webkit-scrollbar {
+  display: none;
+}
+
+/* Le conteneur est le seul élément défilant : il doit pouvoir être atteint
+   au clavier. Le contour reste à l'intérieur pour ne pas déborder. */
+.crescendo:focus-visible {
+  outline: 2px solid var(--c-accent);
+  outline-offset: -4px;
+}
+
+.crescendo__piste {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  min-height: 100%;
+}
+
+/* --- Le fil doré ---------------------------------------------------------- */
+
+.crescendo__fil {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: clamp(0.65rem, 2.5vw, 2rem);
+  z-index: 3;
+
+  width: 1px;
+  background: linear-gradient(
+    to bottom,
+    transparent,
+    rgb(var(--c-lueur) / 0.2) 8%,
+    rgb(var(--c-lueur) / 0.2) 92%,
+    transparent
+  );
+
+  pointer-events: none;
+}
+
+.crescendo__fil-rempli {
+  display: block;
+  width: 100%;
+  height: 100%;
+
+  background: linear-gradient(
+    to bottom,
+    transparent,
+    var(--c-accent) 12%,
+    var(--c-accent-soft) 82%,
+    transparent
+  );
+
+  transform: scaleY(var(--progression, 0));
+  transform-origin: top;
+  will-change: transform;
+}
+
+/* --- L'ouverture : la constellation -------------------------------------- */
+
+.crescendo__intro {
+  position: relative;
+
+  display: grid;
+  place-items: center;
+
+  min-height: 100svh;
+  padding:
+    calc(var(--h-entete) + env(safe-area-inset-top, 0px) + var(--sp-8))
+    var(--marge-page)
+    calc(var(--sp-12) + env(safe-area-inset-bottom, 0px));
+
+  overflow: hidden;
+  text-align: center;
+
+  /* Un voile local calme la nébuleuse derrière le titre et les points. */
+  background: radial-gradient(
+    ellipse at 50% 44%,
+    rgb(10 7 9 / 0.16),
+    rgb(10 7 9 / 0.56) 70%,
+    transparent 100%
+  );
+}
+
+.crescendo__intro::after {
+  content: "";
+  position: absolute;
+  inset: auto 0 0;
+  z-index: 1;
+  height: 30%;
+
+  background: linear-gradient(to top, var(--c-bg), transparent);
+  pointer-events: none;
+}
+
+.crescendo__toile {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.crescendo__intro-texte {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  max-width: 62rem;
+}
+
+.crescendo__surtitre {
+  font-family: var(--font-text);
+  font-size: 0.625rem;
+  font-weight: 500;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--c-accent);
+
+  opacity: 0;
+  transform: translateY(8px);
+  transition:
+    opacity 900ms var(--ease-doux) 150ms,
+    transform 900ms var(--ease-doux) 150ms;
+}
+
+.crescendo__titre {
+  margin-top: var(--sp-3);
+
+  font-family: var(--font-display);
+  font-size: clamp(3.4rem, 16vw, 10rem);
+  font-weight: 300;
+  line-height: 0.95;
+  letter-spacing: var(--tracking-tight);
+  text-wrap: balance;
+  color: var(--c-text);
+
+  text-shadow:
+    0 2px 30px rgb(10 7 9 / 0.9),
+    0 0 4px rgb(10 7 9 / 0.75);
+
+  opacity: 0;
+  transform: translateY(16px);
+  transition:
+    opacity 1300ms var(--ease-doux) 260ms,
+    transform 1300ms var(--ease-doux) 260ms;
+}
+
+.crescendo__intro.est-visible .crescendo__surtitre,
+.crescendo__intro.est-visible .crescendo__titre {
+  opacity: 1;
+  transform: none;
+}
+
+/* --- L'indication de scroll ---------------------------------------------- */
+
+.crescendo__indice {
+  position: absolute;
+  right: var(--marge-page);
+  bottom: calc(var(--sp-8) + env(safe-area-inset-bottom, 0px));
+  z-index: 4;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sp-2);
+
+  font-family: var(--font-text);
+  font-size: var(--fs-xs);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+  color: var(--c-text-muted);
+
+  opacity: 0.75;
+  transition: opacity var(--dur-slow) var(--ease-out);
+  pointer-events: none;
+}
+
+.crescendo__indice::after {
+  content: "";
+  display: block;
+  width: 1px;
+  height: 1.75rem;
+  background: linear-gradient(to bottom, var(--c-accent), transparent);
+  transform-origin: top;
+  animation: crescendo-indice 2.6s var(--ease-in-out) infinite;
+}
+
+@keyframes crescendo-indice {
+  0%,
+  100% {
+    transform: scaleY(0.55);
+    opacity: 0.5;
+  }
+
+  50% {
+    transform: scaleY(1);
+    opacity: 1;
+  }
+}
+
+.crescendo__indice.est-parti {
+  opacity: 0;
+}
+
+/* --- La première photo ---------------------------------------------------- */
+
+.crescendo__souvenir--premier {
+  position: relative;
+  height: 180svh;
+  padding: 0;
+  opacity: 1;
+  transform: none;
+}
+
+.crescendo__premier {
+  height: 100%;
+}
+
+.crescendo__premier-scene {
+  position: sticky;
+  top: 0;
+
+  height: 100svh;
+  overflow: hidden;
+}
+
+.crescendo__premier-cadre {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  background-color: var(--c-surface);
+}
+
+.crescendo__premier-cadre .crescendo__photo {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  max-height: none;
+  object-fit: cover;
+  object-position: 50% 30%;
+}
+
+.crescendo__photo--floue {
+  filter: blur(20px);
+  transform: scale(1.05);
+}
+
+.crescendo__photo--nette {
+  clip-path: inset(0 0 0 100%);
+}
+
+/* Le filet qui découvre la photo nette, exactement comme à l'acte 2. */
+.crescendo__ligne {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 100%;
+  z-index: 2;
+
+  width: 1px;
+  background: linear-gradient(
+    to bottom,
+    transparent,
+    var(--c-accent) 30%,
+    var(--c-accent) 70%,
+    transparent
+  );
+  opacity: 0.55;
+  pointer-events: none;
+}
+
+.crescendo__premier-voile {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+
+  background:
+    linear-gradient(to top, rgb(10 7 9 / 0.94) 0%, rgb(10 7 9 / 0.45) 30%, transparent 66%),
+    linear-gradient(to right, rgb(10 7 9 / 0.3), transparent 55%);
+
+  pointer-events: none;
+}
+
+.crescendo__premier-texte {
+  position: absolute;
+  right: var(--marge-page);
+  bottom: calc(var(--sp-12) + env(safe-area-inset-bottom, 0px));
+  left: var(--marge-page);
+  z-index: 3;
+
+  max-width: 34rem;
+}
+
+.crescendo__premier-texte .crescendo__description,
+.crescendo__premier-texte .crescendo__message {
+  opacity: 0;
+  transform: translateY(12px);
+  transition:
+    opacity 1000ms var(--ease-doux),
+    transform 1000ms var(--ease-doux);
+}
+
+.crescendo__souvenir--premier.est-texte .crescendo__description {
+  opacity: 1;
+  transform: none;
+}
+
+.crescendo__souvenir--premier.est-suite .crescendo__message {
+  opacity: 1;
+  transform: none;
+}
+
+.crescendo__souvenir--premier .crescendo__indice {
+  left: var(--marge-page);
+  right: auto;
+}
+
+/* --- Les textes ----------------------------------------------------------- */
+
+.crescendo__description {
+  font-family: var(--font-text);
+  font-size: 0.625rem;
+  font-weight: 500;
+  line-height: 1.5;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--c-accent);
+  text-shadow: 0 1px 12px rgb(10 7 9 / 0.9);
+}
+
+.crescendo__message {
+  margin-top: var(--sp-3);
+
+  font-family: var(--font-display);
+  font-size: clamp(1.25rem, 5.6vw, 1.55rem);
+  font-weight: 400;
+  line-height: 1.52;
+  letter-spacing: 0.005em;
+  text-wrap: pretty;
+  color: var(--c-text);
+
+  text-shadow:
+    0 1px 18px rgb(10 7 9 / 0.94),
+    0 0 4px rgb(10 7 9 / 0.75);
+}
+
+/* --- Les souvenirs dispersés --------------------------------------------- */
+
+.crescendo__souvenirs {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.crescendo__souvenir {
+  --largeur: 100%;
+
+  position: relative;
+
+  max-width: 72rem;
+  margin-inline: auto;
+  padding: clamp(4.5rem, 25vh, 15rem) var(--marge-page);
+
+  /* Apparition douce : la photo arrive quand elle entre dans le champ. */
+  opacity: 0;
+  transform: translateY(24px);
+  transition:
+    opacity 900ms var(--ease-doux),
+    transform 900ms var(--ease-doux);
+}
+
+.crescendo__souvenir.est-visible {
+  opacity: 1;
+  transform: none;
+}
+
+/* La première photo est un cas à part : elle occupe tout l'écran.
+   Ce sélecteur doit venir après la règle générale pour gagner la cascade. */
+.crescendo__souvenir.crescendo__souvenir--premier {
+  max-width: none;
+  margin-inline: 0;
+  padding: 0;
+  opacity: 1;
+  transform: none;
+}
+
+.crescendo__souvenir-figure {
+  width: min(var(--largeur), 100%);
+}
+
+.crescendo__cadre {
+  overflow: hidden;
+
+  border: 1px solid rgb(var(--c-lueur) / 0.18);
+  border-radius: var(--r-sm);
+  background-color: var(--c-surface);
+  box-shadow:
+    0 24px 60px -30px rgb(0 0 0 / 0.9),
+    0 0 0 1px rgb(10 7 9 / 0.25);
+}
+
+.crescendo__photo {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 76svh;
+  object-fit: cover;
+}
+
+.crescendo__legende {
+  max-width: 36rem;
+  margin-top: var(--sp-4);
+}
+
+/* La dispersion : jamais deux photos sur le même axe. */
+.crescendo__souvenir[data-media="c"] {
+  --largeur: 86%;
+}
+
+.crescendo__souvenir[data-media="c"] .crescendo__souvenir-figure {
+  margin-inline-start: auto;
+}
+
+.crescendo__souvenir[data-media="c"] .crescendo__legende {
+  margin-inline-start: auto;
+}
+
+.crescendo__souvenir[data-media="x"] {
+  --largeur: 100%;
+}
+
+.crescendo__souvenir[data-media="x"] .crescendo__souvenir-figure {
+  margin-inline: auto;
+}
+
+.crescendo__souvenir[data-media="x"] .crescendo__legende {
+  max-width: 40rem;
+  margin-inline: auto;
+}
+
+.crescendo__souvenir[data-media="e"] {
+  --largeur: 88%;
+}
+
+.crescendo__souvenir[data-media="e"] .crescendo__souvenir-figure {
+  margin-inline-end: auto;
+}
+
+.crescendo__souvenir[data-media="w"] {
+  --largeur: 80%;
+}
+
+.crescendo__souvenir[data-media="w"] .crescendo__souvenir-figure {
+  margin-inline-start: auto;
+}
+
+.crescendo__souvenir[data-media="w"] .crescendo__legende {
+  margin-inline-start: auto;
+}
+
+.crescendo__souvenir[data-media="v"] {
+  --largeur: 64%;
+}
+
+.crescendo__souvenir[data-media="v"] .crescendo__souvenir-figure {
+  max-width: 20rem;
+  margin-inline: auto;
+}
+
+.crescendo__souvenir[data-media="v"] .crescendo__legende {
+  max-width: 24rem;
+  margin-inline: auto;
+  text-align: center;
+}
+
+/* --- La vidéo ------------------------------------------------------------- */
+
+.crescendo__video {
+  width: min(100%, 38rem);
+  margin-inline: auto;
+}
+
+.crescendo__video-titre {
+  margin-bottom: var(--sp-4);
+
+  font-family: var(--font-display);
+  font-size: clamp(1.75rem, 6vw, 2.5rem);
+  font-weight: 300;
+  line-height: 1.05;
+  letter-spacing: var(--tracking-tight);
+  text-align: center;
+  color: var(--c-text);
+
+  text-shadow:
+    0 1px 18px rgb(10 7 9 / 0.94),
+    0 0 4px rgb(10 7 9 / 0.75);
+}
+
+.crescendo__video-cadre {
+  position: relative;
+
+  width: 100%;
+  max-height: 82svh;
+  margin-inline: auto;
+  aspect-ratio: 360 / 642;
+  overflow: hidden;
+
+  border: 1px solid rgb(var(--c-lueur) / 0.24);
+  border-radius: var(--r-sm);
+  background-color: #000;
+  box-shadow: 0 24px 60px -30px rgb(0 0 0 / 0.9);
+}
+
+.crescendo__video-media {
+  width: 100%;
+  height: 100%;
+  background-color: #000;
+  object-fit: contain;
+
+  /* La première image ne doit pas apparaître avant le clic : sans cela, on
+     croit que la vidéo a déjà démarré et la musique reste seule à l'écran. */
+  opacity: 0;
+  transition: opacity 320ms var(--ease-out);
+}
+
+.crescendo__video-cadre.est-jouee .crescendo__video-media {
+  opacity: 1;
+}
+
+/* Le bouton de lecture est notre interface ; les contrôles natifs restent
+   disponibles dès que la vidéo démarre. */
+.crescendo__video-play {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-3);
+
+  background: linear-gradient(
+    to top,
+    rgb(10 7 9 / 0.82),
+    rgb(10 7 9 / 0.22) 58%,
+    rgb(10 7 9 / 0.12)
+  );
+  color: var(--c-accent-soft);
+  cursor: pointer;
+}
+
+.crescendo__video-icone {
+  display: grid;
+  place-items: center;
+
+  width: 3.75rem;
+  height: 3.75rem;
+  border: 1px solid rgb(var(--c-lueur) / 0.8);
+  border-radius: var(--r-full);
+  background-color: rgb(10 7 9 / 0.55);
+
+  transition:
+    background-color var(--dur-base) var(--ease-out),
+    border-color var(--dur-base) var(--ease-out);
+}
+
+.crescendo__video-icone::before {
+  content: "";
+  display: block;
+  width: 0;
+  height: 0;
+  margin-left: 0.2rem;
+
+  border-top: 0.5rem solid transparent;
+  border-bottom: 0.5rem solid transparent;
+  border-left: 0.8rem solid var(--c-accent-soft);
+}
+
+.crescendo__video-libelle {
+  font-family: var(--font-text);
+  font-size: var(--fs-xs);
+  font-weight: 500;
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+}
+
+.crescendo__video-play:hover .crescendo__video-icone,
+.crescendo__video-play:focus-visible .crescendo__video-icone {
+  border-color: var(--c-accent-soft);
+  background-color: rgb(var(--c-lueur) / 0.18);
+}
+
+.crescendo__video-play:focus-visible {
+  outline: 2px solid var(--c-accent-soft);
+  outline-offset: -4px;
+}
+
+.crescendo__video-media:focus-visible {
+  outline: 2px solid var(--c-accent);
+  outline-offset: 3px;
+}
+
+.crescendo__video-cadre.est-jouee .crescendo__video-play {
+  display: none;
+}
+
+.crescendo__video-erreur {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+
+  display: grid;
+  place-items: center;
+  padding: var(--sp-6);
+
+  background-color: var(--c-surface);
+  color: var(--c-text-muted);
+
+  font-family: var(--font-text);
+  font-size: var(--fs-sm);
+  line-height: 1.6;
+  text-align: center;
+}
+
+.crescendo__video-cadre.est-erreur .crescendo__video-media {
+  display: none;
+}
+
+/* --- Le pied et la suite -------------------------------------------------- */
+
+.crescendo__pied {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding:
+    var(--sp-12)
+    var(--marge-page)
+    calc(var(--sp-24) + env(safe-area-inset-bottom, 0px));
+}
+
+.crescendo__suite {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  min-height: 48px;
+  padding: 0.85rem 1.5rem;
+
+  border: 1px solid rgb(var(--c-lueur) / 0.55);
+  background-color: transparent;
+  color: var(--c-accent-soft);
+
+  font-family: var(--font-text);
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+
+  opacity: 0;
+  transition:
+    opacity 800ms var(--ease-out),
+    color var(--dur-base) var(--ease-out),
+    background-color var(--dur-base) var(--ease-out),
+    border-color var(--dur-base) var(--ease-out);
+}
+
+.crescendo__suite.est-visible {
+  opacity: 1;
+}
+
+.crescendo__suite:hover,
+.crescendo__suite:focus-visible {
+  border-color: var(--c-accent);
+  background-color: var(--c-accent);
+  color: var(--c-accent-ink);
+}
+
+/* --- Grand écran ---------------------------------------------------------- */
+
+@media (min-width: 700px) {
+  .crescendo__intro {
+    padding-top: calc(var(--h-entete) + var(--sp-12));
+  }
+
+  .crescendo__titre {
+    font-size: clamp(5rem, 11vw, 10rem);
+  }
+
+  .crescendo__premier-texte {
+    right: auto;
+    bottom: 14%;
+    left: max(var(--marge-page), 4rem);
+    max-width: 30rem;
+  }
+
+  .crescendo__premier-texte .crescendo__message {
+    font-size: clamp(1.4rem, 2.4vw, 1.75rem);
+    line-height: 1.55;
+  }
+
+  .crescendo__souvenir {
+    padding-block: clamp(6rem, 25vh, 15rem);
+    padding-inline: max(var(--marge-page), 4vw);
+  }
+
+  .crescendo__souvenir[data-media="c"] {
+    --largeur: 68%;
+  }
+
+  .crescendo__souvenir[data-media="x"] {
+    --largeur: 92%;
+  }
+
+  .crescendo__souvenir[data-media="e"] {
+    --largeur: 72%;
+  }
+
+  .crescendo__souvenir[data-media="w"] {
+    --largeur: 64%;
+  }
+
+  .crescendo__souvenir[data-media="v"] {
+    --largeur: 44%;
+  }
+
+  .crescendo__legende {
+    max-width: 38rem;
+  }
+
+  .crescendo__message {
+    font-size: clamp(1.3rem, 2vw, 1.65rem);
+  }
+
+  .crescendo__video-cadre {
+    max-height: 78svh;
+  }
+
+  .crescendo__video {
+    width: min(100%, 24rem);
+  }
+
+  .crescendo__fil {
+    left: clamp(1rem, 3vw, 2.5rem);
+  }
+}
+
+@media (min-width: 1000px) {
+  .crescendo__souvenir {
+    padding-block: clamp(7rem, 25vh, 16rem);
+  }
+
+  .crescendo__souvenir[data-media="c"] {
+    --largeur: 58%;
+  }
+
+  .crescendo__souvenir[data-media="x"] {
+    --largeur: 84%;
+  }
+
+  .crescendo__souvenir[data-media="e"] {
+    --largeur: 62%;
+  }
+
+  .crescendo__souvenir[data-media="w"] {
+    --largeur: 55%;
+  }
+
+  .crescendo__souvenir[data-media="v"] {
+    --largeur: 34%;
+  }
+}
+
+/* --- Téléphone ------------------------------------------------------------ */
+
+@media (max-width: 639px) {
+  .crescendo__intro {
+    padding-top: calc(var(--h-entete) + env(safe-area-inset-top, 0px) + var(--sp-12));
+  }
+
+  .crescendo__titre {
+    font-size: clamp(3.4rem, 16vw, 5.5rem);
+  }
+
+  .crescendo__premier-texte {
+    bottom: calc(var(--sp-12) + env(safe-area-inset-bottom, 0px));
+  }
+
+  .crescendo__message {
+    font-size: clamp(1.2rem, 5.6vw, 1.45rem);
+    line-height: 1.5;
+  }
+
+  .crescendo__souvenir {
+    padding-block: clamp(4.5rem, 25vh, 15rem);
+  }
+
+  .crescendo__souvenir[data-media="c"] {
+    --largeur: 88%;
+  }
+
+  .crescendo__souvenir[data-media="e"] {
+    --largeur: 92%;
+  }
+
+  .crescendo__souvenir[data-media="w"] {
+    --largeur: 84%;
+  }
+
+  .crescendo__souvenir[data-media="v"] {
+    --largeur: 72%;
+  }
+
+  .crescendo__fil {
+    left: 0.6rem;
+  }
+
+  .crescendo__video {
+    width: 100%;
+  }
+
+  .crescendo__video-cadre {
+    max-height: 80svh;
+  }
+
+  .crescendo__pied {
+    padding-bottom: calc(var(--sp-24) + env(safe-area-inset-bottom, 0px));
+  }
+}
+
+/* --- Mouvement réduit ----------------------------------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+  .crescendo__souvenir,
+  .crescendo__souvenir--premier {
+    opacity: 1;
+    transform: none;
+  }
+
+  .crescendo__photo--floue {
+    display: none;
+  }
+
+  .crescendo__photo--nette {
+    clip-path: none !important;
+  }
+
+  .crescendo__ligne {
+    display: none;
+  }
+
+  .crescendo__premier-texte .crescendo__description,
+  .crescendo__premier-texte .crescendo__message {
+    opacity: 1;
+    transform: none;
+  }
+
+  .crescendo__indice {
+    opacity: 0.45;
+  }
+
+  .crescendo__indice::after {
+    animation: none;
+  }
+
+  .crescendo__suite {
+    transition: none;
+  }
+
+  .crescendo__video-play {
+    transition: none;
+  }
+
+  .crescendo__video-media {
+    transition: none;
+  }
+}

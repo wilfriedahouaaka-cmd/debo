@@ -1,0 +1,61 @@
+/* ==========================================================================
+   Seuil — écran de préchargement
+   Dernier obstacle avant l'expérience. Il doit être court, silencieux,
+   et disparaître sans qu'on s'en souvienne.
+   ========================================================================== */
+
+.prechargement {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-prechargement);
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-6);
+
+  background-color: var(--c-bg);
+  transition: opacity 520ms var(--ease-doux);
+}
+
+.prechargement.est-termine {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.prechargement__libelle {
+  font-family: var(--font-text);
+  font-size: var(--fs-xs);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+  color: var(--c-text-muted);
+}
+
+/* Jauge : une ligne d'or de 1 px, pas une barre de navigateur */
+.prechargement__jauge {
+  width: 140px;
+  height: 1px;
+  appearance: none;
+  border: 0;
+  background-color: var(--c-border);
+}
+
+.prechargement__jauge::-webkit-progress-bar {
+  background-color: var(--c-border);
+}
+
+.prechargement__jauge::-webkit-progress-value {
+  background-color: var(--c-accent);
+  transition: width 260ms var(--ease-out);
+}
+
+.prechargement__jauge::-moz-progress-bar {
+  background-color: var(--c-accent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .prechargement {
+    transition: none;
+  }
+}
