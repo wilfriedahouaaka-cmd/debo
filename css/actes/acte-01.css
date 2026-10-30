@@ -18,53 +18,54 @@
   pointer-events: auto;
 
   opacity: 1;
-  transition: opacity 900ms var(--ease-doux);
+  /* Le noir se lève lentement pour laisser la radio émerger par-dessous. */
+  transition: opacity 1100ms var(--ease-doux);
 }
 
 .signal-intro.est-parti {
   opacity: 0;
 }
 
-/* Les étincelles sont des points de 2 à 3 px, jamais des étoiles de fond.
-   Un peu plus vives, un halo plus large, pour qu'on les voie vraiment. */
+/* Les étincelles sont des points de 2 px, jamais des étoiles de fond.
+   Le halo reste court : on doit les deviner plus que les voir. */
 .signal-intro__etincelle {
   position: absolute;
   left: var(--x);
   top: var(--y);
 
-  width: 3px;
-  height: 3px;
+  width: 2px;
+  height: 2px;
   border-radius: 50%;
 
-  background-color: var(--c-accent);
+  background-color: var(--c-accent-soft);
   box-shadow:
-    0 0 10px rgb(var(--c-lueur) / 0.9),
-    0 0 20px rgb(var(--c-lueur) / 0.5);
+    0 0 6px rgb(var(--c-lueur) / 0.55),
+    0 0 14px rgb(var(--c-lueur) / 0.22);
 
   opacity: 0;
-  transform: scale(0.3);
-  animation: intro-etincelle var(--duree, 2.0s) var(--ease-out) var(--retard, 0ms) both;
+  transform: scale(0.4);
+  animation: intro-etincelle var(--duree, 2.4s) var(--ease-out) var(--retard, 0ms) both;
 }
 
-/* Une trace verticale fine mais lisible : l'éclair, pas la foudre. */
+/* Une trace verticale d'un pixel : l'éclair, pas la foudre. */
 .signal-intro__eclair {
   position: absolute;
   left: var(--x);
   top: var(--y);
 
-  width: 1.5px;
-  height: var(--h, 24px);
+  width: 1px;
+  height: var(--h, 18px);
 
   background: linear-gradient(
     to bottom,
     transparent,
-    var(--c-accent) 45%,
+    var(--c-accent-soft) 45%,
     transparent
   );
 
   opacity: 0;
-  transform: rotate(var(--r, 0deg)) scaleY(0.15);
-  animation: intro-eclair 1.3s var(--ease-out) var(--retard, 0ms) both;
+  transform: rotate(var(--r, 0deg)) scaleY(0.2);
+  animation: intro-eclair 1.6s var(--ease-out) var(--retard, 0ms) both;
 }
 
 .acte--signal {
@@ -114,7 +115,10 @@
   display: block;
   width: min(18rem, 70vw);
   text-align: left;
-  transition: opacity 1300ms var(--ease-doux);
+
+  /* Le léger retard laisse le noir commencer à se lever avant que la radio
+     n'apparaisse : elle émerge du fond, elle ne s'allume pas d'un coup. */
+  transition: opacity 1500ms var(--ease-doux) 150ms;
 }
 
 .radio:disabled {
@@ -655,57 +659,45 @@
   }
 }
 
+/* Un éclat bref, un écho plus faible, puis l'extinction. */
 @keyframes intro-etincelle {
   0%,
-  14%,
-  28%,
-  42%,
-  56%,
-  70%,
-  84%,
   100% {
     opacity: 0;
-    transform: scale(0.3);
+    transform: scale(0.4);
   }
   6% {
-    opacity: 0.85;
+    opacity: 0.55;
     transform: scale(1);
   }
-  20% {
-    opacity: 0.35;
-    transform: scale(0.65);
+  13% {
+    opacity: 0.12;
+    transform: scale(0.7);
   }
-  34% {
-    opacity: 0.65;
+  21% {
+    opacity: 0.38;
     transform: scale(0.9);
   }
-  48% {
-    opacity: 0.3;
-    transform: scale(0.55);
-  }
-  62% {
-    opacity: 0.55;
-    transform: scale(0.85);
-  }
-  76% {
-    opacity: 0.25;
+  29% {
+    opacity: 0;
     transform: scale(0.5);
   }
 }
 
+/* Un seul battement, très court : la foudre ne s'attarde pas. */
 @keyframes intro-eclair {
   0%,
   100% {
     opacity: 0;
-    transform: rotate(var(--r, 0deg)) scaleY(0.15);
+    transform: rotate(var(--r, 0deg)) scaleY(0.2);
   }
-  6% {
-    opacity: 0.6;
+  8% {
+    opacity: 0.35;
     transform: rotate(var(--r, 0deg)) scaleY(1);
   }
-  12% {
+  16% {
     opacity: 0;
-    transform: rotate(var(--r, 0deg)) scaleY(0.7);
+    transform: rotate(var(--r, 0deg)) scaleY(0.6);
   }
 }
 

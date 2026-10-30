@@ -68,6 +68,11 @@ async function initialiser() {
     const depart = acteDemande();
     if (depart !== CONFIG.actes.premier) {
       tracer(`Ouverture directe sur l'acte ${depart} (mode debug)`);
+
+      // Le voile noir de l'acte 1 n'est retiré que par l'acte 1. En ouverture
+      // directe sur un autre acte, il resterait posé et masquerait tout.
+      const voile = document.getElementById('signal-intro');
+      if (voile) voile.hidden = true;
     }
     await allerA(depart);
 

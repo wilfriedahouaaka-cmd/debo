@@ -183,6 +183,8 @@
 /* --- L'indication de scroll ---------------------------------------------- */
 
 .crescendo__indice {
+  --opacite-indice: 0.75;
+
   position: absolute;
   right: var(--marge-page);
   bottom: calc(var(--sp-8) + env(safe-area-inset-bottom, 0px));
@@ -199,7 +201,7 @@
   text-transform: uppercase;
   color: var(--c-text-muted);
 
-  opacity: 0.75;
+  opacity: var(--opacite-indice);
   transition: opacity var(--dur-slow) var(--ease-out);
   pointer-events: none;
 }
@@ -229,6 +231,16 @@
 
 .crescendo__indice.est-parti {
   opacity: 0;
+}
+
+/* L'indice de l'intro reste caché pendant la constellation : il n'apparaît
+   qu'une fois l'explosion terminée, pour ne pas inviter à descendre trop tôt. */
+.crescendo__intro .crescendo__indice {
+  opacity: 0;
+}
+
+.crescendo__intro .crescendo__indice.est-visible {
+  opacity: var(--opacite-indice);
 }
 
 /* --- La première photo ---------------------------------------------------- */
@@ -501,6 +513,21 @@
   max-width: 24rem;
   margin-inline: auto;
   text-align: center;
+}
+
+/* Les captures w et v contiennent de larges bandes noires. On ne garde que
+   la photo utile, au format 6:5, pour ne pas afficher un cadre vide. */
+.crescendo__souvenir[data-media="w"] .crescendo__cadre,
+.crescendo__souvenir[data-media="v"] .crescendo__cadre {
+  aspect-ratio: 6 / 5;
+}
+
+.crescendo__souvenir[data-media="w"] .crescendo__photo,
+.crescendo__souvenir[data-media="v"] .crescendo__photo {
+  height: 100%;
+  max-height: none;
+  object-fit: cover;
+  object-position: 50% 48%;
 }
 
 /* --- La vidéo ------------------------------------------------------------- */
@@ -887,7 +914,7 @@
   }
 
   .crescendo__indice {
-    opacity: 0.45;
+    --opacite-indice: 0.45;
   }
 
   .crescendo__indice::after {

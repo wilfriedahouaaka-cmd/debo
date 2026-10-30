@@ -86,25 +86,20 @@ const STRUCTURE = `
 
 /**
  * Écran noir d'avant-radio.
- * Les positions sont volontairement dispersées : des étincelles alignées
- * ressembleraient à un motif décoratif, pas à un signal qui cherche.
- * Un peu plus nombreuses, un peu plus vives, un peu plus longues.
+ * Six étincelles seulement, dispersées : un signal qui cherche, pas une
+ * guirlande. Les premières arrivent après un court silence noir, pour que
+ * l'écran ait le temps de se vider avant que quelque chose ne s'allume.
  */
 const INTRO = `
-  <span class="signal-intro__etincelle" style="--x: 18%; --y: 32%; --retard: 80ms; --duree: 2.2s;"></span>
-  <span class="signal-intro__etincelle" style="--x: 72%; --y: 25%; --retard: 220ms; --duree: 2.0s;"></span>
-  <span class="signal-intro__etincelle" style="--x: 38%; --y: 55%; --retard: 40ms; --duree: 2.4s;"></span>
-  <span class="signal-intro__etincelle" style="--x: 78%; --y: 61%; --retard: 560ms; --duree: 2.1s;"></span>
-  <span class="signal-intro__etincelle" style="--x: 28%; --y: 68%; --retard: 320ms; --duree: 2.3s;"></span>
-  <span class="signal-intro__etincelle" style="--x: 62%; --y: 16%; --retard: 720ms; --duree: 1.9s;"></span>
-  <span class="signal-intro__etincelle" style="--x: 45%; --y: 42%; --retard: 900ms; --duree: 2.0s;"></span>
-  <span class="signal-intro__etincelle" style="--x: 15%; --y: 52%; --retard: 1100ms; --duree: 1.8s;"></span>
-  <span class="signal-intro__etincelle" style="--x: 85%; --y: 45%; --retard: 1300ms; --duree: 1.7s;"></span>
-  <span class="signal-intro__etincelle" style="--x: 52%; --y: 78%; --retard: 1500ms; --duree: 1.6s;"></span>
+  <span class="signal-intro__etincelle" style="--x: 22%; --y: 34%; --retard: 250ms; --duree: 2.6s;"></span>
+  <span class="signal-intro__etincelle" style="--x: 74%; --y: 27%; --retard: 480ms; --duree: 2.4s;"></span>
+  <span class="signal-intro__etincelle" style="--x: 41%; --y: 62%; --retard: 720ms; --duree: 2.8s;"></span>
+  <span class="signal-intro__etincelle" style="--x: 83%; --y: 66%; --retard: 980ms; --duree: 2.2s;"></span>
+  <span class="signal-intro__etincelle" style="--x: 30%; --y: 74%; --retard: 1250ms; --duree: 2.5s;"></span>
+  <span class="signal-intro__etincelle" style="--x: 60%; --y: 18%; --retard: 1520ms; --duree: 2.3s;"></span>
 
-  <span class="signal-intro__eclair" style="--x: 48%; --y: 28%; --retard: 400ms; --h: 34px; --r: 12deg;"></span>
-  <span class="signal-intro__eclair" style="--x: 55%; --y: 58%; --retard: 850ms; --h: 22px; --r: -18deg;"></span>
-  <span class="signal-intro__eclair" style="--x: 32%; --y: 38%; --retard: 1200ms; --h: 18px; --r: 22deg;"></span>
+  <span class="signal-intro__eclair" style="--x: 52%; --y: 31%; --retard: 850ms; --h: 18px; --r: 10deg;"></span>
+  <span class="signal-intro__eclair" style="--x: 35%; --y: 57%; --retard: 1450ms; --h: 14px; --r: -16deg;"></span>
 `;
 
 
@@ -234,6 +229,8 @@ function demarrerIntro() {
     racine.classList.remove('est-intro');
   }, 2200);
 
+  // Le fondu de la radio dure 1,5 s et commence 150 ms après le lever du noir :
+  // on n'active les commandes qu'une fois qu'elle est réellement visible.
   planifier(() => {
     intro.hidden = true;
     if (entete) entete.inert = false;
@@ -241,7 +238,7 @@ function demarrerIntro() {
       radio.disabled = false;
       bouton.disabled = false;
     }
-  }, 3500);
+  }, 3900);
 }
 
 /** Coupe proprement l'entrée si l'acte est quitté avant la fin. */

@@ -34,8 +34,9 @@ const MAX_PARTICULES = 110;
 
 /** Durées de la constellation, en millisecondes. */
 const DUREE_CONSTELLATION = 2900;
+const DUREE_RASSEMBLEMENT = 550;
 const DUREE_EXPLOSION = 1500;
-const DUREE_TOTALE = DUREE_CONSTELLATION + DUREE_EXPLOSION;
+const DUREE_TOTALE = DUREE_CONSTELLATION + DUREE_RASSEMBLEMENT + DUREE_EXPLOSION;
 
 /** Couleurs du ciel de l'acte, alignées sur les jetons de variables.css. */
 const COULEURS = ['#c9a86a', '#d08c9d', '#8e6fa8'];
@@ -80,6 +81,7 @@ let premierCadre = null;
 let premierNette = null;
 let premierLigne = null;
 let indicePremier = null;
+let indiceIntro = null;
 
 let video = null;
 let cadreVideo = null;
@@ -92,11 +94,15 @@ let jetonVideo = 0;
 let observers = [];
 let demande = null;
 let session = 0;
+let actif = false;
 let reduit = false;
+let introVisible = false;
 let vue = new Set();
+let minuteurIndice = null;
 
 let animationToile = null;
 let toileSession = 0;
+let toileTerminee = false;
 let observateurToile = null;
 let particules = [];
 let tailleToile = { largeur: 1, hauteur: 1, dpr: 1 };
@@ -326,6 +332,7 @@ export function init(conteneur) {
   premierNette = conteneur.querySelector('.crescendo__photo--nette');
   premierLigne = conteneur.querySelector('.crescendo__ligne');
   indicePremier = conteneur.querySelector('.crescendo__premier .crescendo__indice');
+  indiceIntro = conteneur.querySelector('.crescendo__intro .crescendo__indice');
 
   video = conteneur.querySelector('.crescendo__video-media');
   cadreVideo = conteneur.querySelector('.crescendo__video-cadre');
@@ -370,8 +377,14 @@ export function init(conteneur) {
 export function enter() {
   const jeton = ++session;
   jetonVideo += 1;
+  actif = true;
   nettoyer();
   reduit = mouvementReduit();
+  introVisible = false;
+
+  // La toile peut avoir été dimensionnée alors que l'acte était caché
+  // (changement de taille sur un autre acte) : on repart de sa taille réelle.
+  dimensionnerToile();
 
   // Les médias ne sont demandés qu'une fois l'acte réellement visible :
   // c'est la leçon de l'acte 3, où un chargement trop tôt empêchait Chromium
@@ -430,10 +443,28 @@ export function enter() {
   jouer();
   fonduVers(CONFIG.audio.volume, 1200);
 
+  // L'indice de l'intro n'apparaît qu'une fois la constellation jouée :
+  // pendant l'animation, il inviterait à descendre trop tôt.
+  if (indiceIntro) {
+    indiceIntro.classList.remove('est-visible');
+    if (reduit) {
+      indiceIntro.classList.add('est-visible');
+    } else {
+      minuteurIndice = window.setTimeout(() => {
+        minuteurIndice = null;
+        if (actif) indiceIntro?.classList.add('est-visible');
+      }, DUREE_TOTALE);
+    }
+  }
+
   // La photo et les textes se révèlent à mesure qu'ils entrent dans le champ.
   if (zone) {
+    const jetonSouvenirs = session;
     const observateur = new IntersectionObserver(
       (entrees) => {
+        // Une ancienne observation ne doit jamais agir sur un nouvel acte.
+        if (!actif || jetonSouvenirs !== session) return;
+
         entrees.forEach((entree) => {
           if (!entree.isIntersecting) return;
 
@@ -454,8 +485,12 @@ export function enter() {
   if (intro && !reduit) {
     observateurToile = new IntersectionObserver(
       (entrees) => {
-        const visible = entrees[0]?.isIntersecting;
-        if (visible) demarrerToile(session);
+        if (jeton !== session) return;
+
+        const visible = Boolean(entrees[0]?.isIntersecting);
+        introVisible = visible;
+
+        if (visible) demarrerToile(jeton);
         else arreterToile();
       },
       { threshold: 0.01 }
@@ -470,12 +505,14 @@ export function enter() {
   if (reduit) {
     dessinerStatique();
     appliquerPremier(1);
-  } else {
-    demarrerToile(jeton);
   }
+  // Pas d'appel direct à demarrerToile ici : l'observateur ci-dessus s'en
+  // charge. Sinon la constellation redémarre une deuxième fois au premier
+  // passage, ce qui provoque un saut visible dans l'animation.
 }
 
 export function exit() {
+  actif = false;
   session += 1;
   jetonVideo += 1;
   nettoyer();
@@ -490,9 +527,13 @@ function nettoyer() {
   if (demande) cancelAnimationFrame(demande);
   demande = null;
 
+  if (minuteurIndice) window.clearTimeout(minuteurIndice);
+  minuteurIndice = null;
+
   observers.forEach((observateur) => observateur.disconnect());
   observers = [];
 
+  introVisible = false;
   arreterToile();
   document.removeEventListener('visibilitychange', surVisibilite);
 }
@@ -502,10 +543,12 @@ function nettoyer() {
    -------------------------------------------------------------------------- */
 
 function surDefilement() {
-  if (demande) return;
+  if (!actif || demande) return;
 
   demande = requestAnimationFrame(() => {
     demande = null;
+    if (!actif) return;
+
     mettreAJourFil();
     if (!reduit) mettreAJourPremier();
   });
@@ -559,7 +602,7 @@ function appliquerPremier(valeur) {
    -------------------------------------------------------------------------- */
 
 function revelerSuite() {
-  if (!bouton || !bouton.hidden) return;
+  if (!actif || !bouton || !bouton.hidden) return;
 
   bouton.hidden = false;
   requestAnimationFrame(() => bouton.classList.add('est-visible'));
@@ -571,7 +614,7 @@ function revelerSuite() {
    -------------------------------------------------------------------------- */
 
 function lancerVideo() {
-  if (!video) return;
+  if (!actif || !video) return;
 
   // Le clic est un vrai geste utilisateur : on s'assure que la vidéo n'est
   // pas restée muette après une lecture précédente ou une politique navigateur.
@@ -585,6 +628,8 @@ function lancerVideo() {
 }
 
 function surLectureVideo() {
+  if (!actif) return;
+
   if (cadreVideo) {
     cadreVideo.classList.add('est-jouee');
     cadreVideo.classList.remove('est-erreur');
@@ -606,7 +651,7 @@ function surLectureVideo() {
 }
 
 function surPauseVideo() {
-  if (!video || video.ended) return;
+  if (!actif || !video || video.ended) return;
 
   jetonVideo += 1;
   jouer();
@@ -614,18 +659,24 @@ function surPauseVideo() {
 }
 
 function surFinVideo() {
+  if (!actif) return;
+
   jetonVideo += 1;
   jouer();
   fonduVers(CONFIG.audio.volume, 800);
 }
 
 function surMetadataVideo() {
+  if (!actif) return;
+
   if (cadreVideo) cadreVideo.classList.remove('est-erreur');
   if (erreurVideo) erreurVideo.hidden = true;
   if (boutonVideo && video?.paused) boutonVideo.hidden = false;
 }
 
 function montrerErreurVideo() {
+  if (!actif) return;
+
   if (cadreVideo) {
     cadreVideo.classList.add('est-erreur');
     cadreVideo.classList.remove('est-jouee');
@@ -666,13 +717,18 @@ function surRedimensionnement() {
 
   dimensionnerToile();
 
-  // Une toile redimensionnée repart de zéro au prochain passage.
-  if (!reduit && intro?.classList.contains('est-visible')) {
+  // Une toile redimensionnée repart de zéro si l'animation est encore en
+  // cours. Si elle est terminée, on la laisse vide : la relancer à chaque
+  // changement de taille donnerait l'impression d'un bug.
+  if (!reduit && introVisible && !toileTerminee) {
     demarrerToile(session);
   }
 }
 
 function demarrerToile(jeton) {
+  // Un ancien observateur ne doit jamais relancer l'animation du nouvel acte.
+  if (jeton !== session) return;
+
   if (!toile || !contexte || reduit) {
     dessinerStatique();
     return;
@@ -680,6 +736,7 @@ function demarrerToile(jeton) {
 
   arreterToile();
   toileSession = jeton;
+  toileTerminee = false;
   debutToile = performance.now();
   animationToile = requestAnimationFrame(() => boucleToile(jeton));
 }
@@ -700,6 +757,7 @@ function boucleToile(jeton) {
     animationToile = requestAnimationFrame(() => boucleToile(jeton));
   } else {
     animationToile = null;
+    toileTerminee = true;
   }
 }
 
@@ -716,7 +774,18 @@ function dessinerToile(temps) {
     return;
   }
 
-  const progression = Math.min(Math.max((temps - DUREE_CONSTELLATION) / DUREE_EXPLOSION, 0), 1);
+  const apresConstellation = temps - DUREE_CONSTELLATION;
+
+  // Les points se rassemblent au centre avant d'éclater.
+  if (apresConstellation < DUREE_RASSEMBLEMENT) {
+    dessinerRassemblement(apresConstellation / DUREE_RASSEMBLEMENT);
+    return;
+  }
+
+  const progression = Math.min(
+    Math.max((apresConstellation - DUREE_RASSEMBLEMENT) / DUREE_EXPLOSION, 0),
+    1
+  );
   dessinerExplosion(progression);
 }
 
@@ -762,6 +831,75 @@ function dessinerConstellation(apparitionPoints, apparitionLiens) {
   contexte.restore();
 }
 
+/**
+ * Les points quittent leur place et se resserrent au centre.
+ * Les liens s'effacent au fur et à mesure : à la fin, il ne reste qu'un
+ * petit amas lumineux, prêt à éclater.
+ */
+function dessinerRassemblement(progression) {
+  const { largeur, hauteur } = tailleToile;
+  const centreX = largeur * 0.5;
+  const centreY = hauteur * 0.45;
+  const avancement = progression * progression * (3 - 2 * progression);
+  const concentration = avancement * 0.9;
+
+  const positions = POINTS.map(([x, y]) => {
+    const departX = x * largeur;
+    const departY = y * hauteur;
+    return [
+      departX + (centreX - departX) * concentration,
+      departY + (centreY - departY) * concentration,
+    ];
+  });
+
+  contexte.save();
+  contexte.lineWidth = 0.7;
+
+  LIENS.forEach(([depart, fin]) => {
+    contexte.globalAlpha = (1 - avancement) * 0.24;
+    contexte.strokeStyle = COULEURS[0];
+    contexte.beginPath();
+    contexte.moveTo(positions[depart][0], positions[depart][1]);
+    contexte.lineTo(positions[fin][0], positions[fin][1]);
+    contexte.stroke();
+  });
+
+  // Un halo discret se resserre au centre pour annoncer l'explosion.
+  const halo = contexte.createRadialGradient(
+    centreX,
+    centreY,
+    0,
+    centreX,
+    centreY,
+    largeur * 0.28
+  );
+  halo.addColorStop(0, `rgba(216, 184, 120, ${0.16 * avancement})`);
+  halo.addColorStop(1, 'rgba(216, 184, 120, 0)');
+  contexte.globalAlpha = 1;
+  contexte.fillStyle = halo;
+  contexte.fillRect(0, 0, largeur, hauteur);
+
+  POINTS.forEach((point, index) => {
+    const x = positions[index][0];
+    const y = positions[index][1];
+    const rayon = (index % 5 === 0 ? 2.6 : 1.6) * (1 + avancement * 0.45);
+    const couleur = COULEURS[index % COULEURS.length];
+
+    contexte.globalAlpha = Math.max(
+      0,
+      (index % 5 === 0 ? 0.9 : 0.55) * (1 - avancement * 0.25)
+    );
+    contexte.fillStyle = couleur;
+    contexte.shadowColor = couleur;
+    contexte.shadowBlur = index % 5 === 0 ? 14 : 7;
+    contexte.beginPath();
+    contexte.arc(x, y, rayon, 0, Math.PI * 2);
+    contexte.fill();
+  });
+
+  contexte.restore();
+}
+
 function dessinerExplosion(progression) {
   const { largeur, hauteur } = tailleToile;
   const centreX = largeur * 0.5;
@@ -771,22 +909,8 @@ function dessinerExplosion(progression) {
 
   if (!particules.length) creerParticules();
 
-  // La constellation se défait en même temps que les particules partent.
-  contexte.save();
-  contexte.globalAlpha = Math.max(0, 1 - progression * 1.5);
-
-  LIENS.forEach(([depart, fin]) => {
-    const a = POINTS[depart];
-    const b = POINTS[fin];
-    contexte.strokeStyle = COULEURS[0];
-    contexte.lineWidth = 0.6;
-    contexte.beginPath();
-    contexte.moveTo(a[0] * largeur, a[1] * hauteur);
-    contexte.lineTo(b[0] * largeur, b[1] * hauteur);
-    contexte.stroke();
-  });
-
-  contexte.restore();
+  // Le rassemblement a déjà effacé la constellation : l'explosion part
+  // directement du petit amas central, sans faire réapparaître les liens.
 
   // Halo central, très discret : il donne une source à l'explosion.
   const halo = contexte.createRadialGradient(centreX, centreY, 0, centreX, centreY, rayonMax * 0.38);
@@ -853,7 +977,7 @@ function surVisibilite() {
 
   if (document.hidden) {
     arreterToile();
-  } else if (intro?.classList.contains('est-visible')) {
+  } else if (introVisible && !toileTerminee) {
     demarrerToile(session);
   }
 }
